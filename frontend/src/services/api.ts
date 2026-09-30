@@ -13,7 +13,7 @@ export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8
 
 export function getActiveSession(): any {
   try {
-    const raw = localStorage.getItem('crimegraph_session');
+    const raw = localStorage.getItem('sahyog_vasp_session') || localStorage.getItem('crimegraph_session');
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -33,7 +33,7 @@ export function getAuthHeaders(extraHeaders: Record<string, string> = {}): Recor
 
 export function getActiveOfficerId(): string {
   const session = getActiveSession();
-  return session ? `${session.full_name} (${session.badge_number})` : 'Inspector R. K. Sharma (IO-782)';
+  return session ? `${session.full_name} (${session.badge_number})` : 'Insp. V. S. Chauhan (I4C-CRYPTO-782)';
 }
 
 export async function fetchGraphData(): Promise<GraphData> {

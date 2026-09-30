@@ -162,12 +162,12 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated }) => {
             <Shield className="w-4 h-4" />
           </div>
           <span className="text-xs font-mono font-bold tracking-wider text-slate-200">
-            MINISTRY OF HOME AFFAIRS (MHA) • BHARAT SAKSHYA ADHINIYAM (BSA) 2023 SEC 63 COMPLIANT
+            MINISTRY OF HOME AFFAIRS (MHA) • INDIAN CYBER CRIME COORDINATION CENTRE (I4C) • SIH26182 COMPLIANT
           </span>
         </div>
         <div className="hidden md:flex items-center space-x-2 text-[11px] font-mono text-cyan-400/80">
           <Fingerprint className="w-3.5 h-3.5" />
-          <span>ZERO-TRUST IDENTITY GATEWAY v4.0</span>
+          <span>ZERO-TRUST IDENTITY GATEWAY v4.0 • SAHYOG-VASP AI</span>
         </div>
       </div>
 
@@ -183,10 +183,10 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated }) => {
             <div className="inline-flex p-3 rounded-2xl bg-cyan-950/60 border border-cyan-500/40 text-cyan-400 shadow-lg shadow-cyan-950 mb-3">
               <Shield className="w-9 h-9" />
             </div>
-            <h1 className="text-xl font-bold tracking-wide text-white">CRIMEGRAPH AI</h1>
-            <p className="text-xs text-cyan-400 font-mono mt-0.5">Sovereign Law Enforcement Portal</p>
+            <h1 className="text-xl font-bold tracking-wide text-white">SAHYOG-VASP AI</h1>
+            <p className="text-xs text-cyan-400 font-mono mt-0.5">Automated Blockchain VASP Attribution Portal</p>
             <p className="text-[11px] text-slate-400 mt-1">
-              Restricted workstation for authorized investigating officers and intelligence directors.
+              Restricted workstation for authorized I4C, FIU-IND, and State Cyber Crime investigating officers.
             </p>
           </div>
 
@@ -213,7 +213,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated }) => {
                     type="text"
                     value={badgeNumber}
                     onChange={(e) => setBadgeNumber(e.target.value)}
-                    placeholder="e.g. MHA-DIR-001 or NCRB-WS-782"
+                    placeholder="e.g. I4C-DIR-001 or I4C-CRYPTO-782"
                     className="w-full pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-mono transition"
                     autoComplete="username"
                     required
@@ -394,7 +394,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated }) => {
           <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-start space-x-2 text-[10px] text-slate-500">
             <ShieldAlert className="w-3.5 h-3.5 text-amber-500/70 shrink-0 mt-0.5" />
             <p>
-              Under Section 69 IT Act and Section 63 BSA 2023, unauthorized login attempts are recorded with remote IP and notarized to the national audit chain.
+              Under Section 94 BNSS 2023, Section 69 IT Act, and Section 63 BSA 2023, unauthorized login attempts are recorded with remote IP and notarized to the national audit chain.
             </p>
           </div>
         </div>
@@ -474,7 +474,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated }) => {
         const targetBadge = (mfaUserMeta.badge_number || badgeNumber).trim().toUpperCase();
         const matched = demoPersonas.find(p => p.badge_number === targetBadge) || demoPersonas[0];
         if (!matched) return null;
-        const otpauthUri = `otpauth://totp/CRIMEGRAPH-AI:${matched.badge_number}?secret=${matched.totp_secret}&issuer=MHA-CRIMEGRAPH`;
+        const otpauthUri = `otpauth://totp/SAHYOG-VASP-AI:${matched.badge_number}?secret=${matched.totp_secret}&issuer=I4C-MHA`;
         return (
           <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
             <div className="bg-slate-900 border border-cyan-500/50 rounded-2xl p-6 max-w-sm w-full text-center relative shadow-2xl">

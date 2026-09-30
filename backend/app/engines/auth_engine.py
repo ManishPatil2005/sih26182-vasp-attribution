@@ -157,7 +157,7 @@ class AuthEngine:
             "role": user.role,
             "iat": int(now),
             "exp": int(exp),
-            "iss": "CRIMEGRAPH-SOVEREIGN-AUTH",
+            "iss": "SAHYOG-VASP-SOVEREIGN-AUTH",
             "jti": secrets.token_hex(12)
         }
 
@@ -213,13 +213,13 @@ class AuthEngine:
         return payload
 
     def _seed_default_officers(self):
-        """Pre-provisions official law enforcement officers and test personas."""
+        """Pre-provisions official law enforcement officers and test personas for SIH26182."""
         seed_data = [
             {
-                "user_id": "usr-mha-001",
-                "badge_number": "MHA-DIR-001",
-                "full_name": "Ajit V. Doval",
-                "rank": "Apex National Security Advisor",
+                "user_id": "usr-i4c-001",
+                "badge_number": "I4C-DIR-001",
+                "full_name": "Dr. Sarim Moin",
+                "rank": "Apex National Cybercrime Director (I4C)",
                 "agency_code": "MHA_APEX_COMMAND",
                 "clearance_level": "TOP_SECRET_APEX",
                 "role": "SUPER_ADMIN",
@@ -228,26 +228,26 @@ class AuthEngine:
                 "is_active": True
             },
             {
-                "user_id": "usr-ncrb-782",
-                "badge_number": "NCRB-WS-782",
-                "full_name": "Insp. R. K. Sharma",
-                "rank": "Lead Cyber Investigator",
-                "agency_code": "NCRB_WOMEN_SAFETY",
-                "clearance_level": "RESTRICTED_NCRB_OPS",
+                "user_id": "usr-i4c-782",
+                "badge_number": "I4C-CRYPTO-782",
+                "full_name": "Insp. V. S. Chauhan",
+                "rank": "Lead Blockchain Forensics & VASP Attribution IO",
+                "agency_code": "I4C_BLOCKCHAIN_OPS",
+                "clearance_level": "RESTRICTED_I4C_CRYPTO_OPS",
                 "role": "INVESTIGATING_OFFICER",
-                "password": "NcrbInvestigator#1",
+                "password": "I4cCryptoInvestigator#1",
                 "totp_secret": "KRSXG5CTMVRXEZLU",
                 "is_active": True
             },
             {
-                "user_id": "usr-nia-044",
-                "badge_number": "NIA-TF-044",
-                "full_name": "SP Vikrant Sen",
-                "rank": "Superintendent of Police (Hawala Cell)",
-                "agency_code": "NIA_TERROR_FINANCE",
+                "user_id": "usr-fiu-441",
+                "badge_number": "FIU-IND-441",
+                "full_name": "ADG Alok Verma",
+                "rank": "Director (VDA Compliance & Anti-Money Laundering)",
+                "agency_code": "FIU_IND_COMPLIANCE",
                 "clearance_level": "CONFIDENTIAL_FINANCIAL_INTEL",
                 "role": "AGENCY_SUPERVISOR",
-                "password": "NiaTerrorFin$99",
+                "password": "FiuIndVdaNotice$99",
                 "totp_secret": "MZXW633PN5XW6MZX",
                 "is_active": True
             },
@@ -255,7 +255,7 @@ class AuthEngine:
                 "user_id": "usr-state-109",
                 "badge_number": "MH-CYBER-109",
                 "full_name": "SI Manish Patil",
-                "rank": "Sub-Inspector Cyber Crime",
+                "rank": "Sub-Inspector (1930 Cyber Fraud Taskforce)",
                 "agency_code": "STATE_POLICE_IO",
                 "clearance_level": "OPERATIONAL_FIELD_CLEARANCE",
                 "role": "INVESTIGATING_OFFICER",
@@ -264,7 +264,56 @@ class AuthEngine:
                 "is_active": True
             },
             {
-                "user_id": "usr-rogue-007",
+                "user_id": "usr-suspended-007",
+                "badge_number": "SUSPENDED-IO-007",
+                "full_name": "Former IO Vikram Rao",
+                "rank": "Ex-Inspector (Suspended / De-authorized)",
+                "agency_code": "STATE_POLICE_IO",
+                "clearance_level": "OPERATIONAL_FIELD_CLEARANCE",
+                "role": "INVESTIGATING_OFFICER",
+                "password": "HackedPassword123!",
+                "totp_secret": "OBSWY3DPEHPK3PXS",
+                "is_active": False  # Suspended to demonstrate zero-trust defense
+            },
+            # Backward-compatibility legacy aliases for test suites
+            {
+                "user_id": "usr-legacy-mha-001",
+                "badge_number": "MHA-DIR-001",
+                "full_name": "Dr. Sarim Moin",
+                "rank": "Apex National Cybercrime Director (I4C)",
+                "agency_code": "MHA_APEX_COMMAND",
+                "clearance_level": "TOP_SECRET_APEX",
+                "role": "SUPER_ADMIN",
+                "password": "ApexSecure2025!",
+                "totp_secret": "JBSWY3DPEHPK3PXP",
+                "is_active": True
+            },
+            {
+                "user_id": "usr-legacy-ncrb-782",
+                "badge_number": "NCRB-WS-782",
+                "full_name": "Insp. V. S. Chauhan",
+                "rank": "Lead Blockchain Forensics & VASP Attribution IO",
+                "agency_code": "I4C_BLOCKCHAIN_OPS",
+                "clearance_level": "RESTRICTED_I4C_CRYPTO_OPS",
+                "role": "INVESTIGATING_OFFICER",
+                "password": "NcrbInvestigator#1",
+                "totp_secret": "KRSXG5CTMVRXEZLU",
+                "is_active": True
+            },
+            {
+                "user_id": "usr-legacy-nia-044",
+                "badge_number": "NIA-TF-044",
+                "full_name": "ADG Alok Verma",
+                "rank": "Director (VDA Compliance & AML)",
+                "agency_code": "FIU_IND_COMPLIANCE",
+                "clearance_level": "CONFIDENTIAL_FINANCIAL_INTEL",
+                "role": "AGENCY_SUPERVISOR",
+                "password": "NiaTerrorFin$99",
+                "totp_secret": "MZXW633PN5XW6MZX",
+                "is_active": True
+            },
+            {
+                "user_id": "usr-legacy-rogue-007",
                 "badge_number": "ROGUE-IO-007",
                 "full_name": "Former IO Vikram Rao",
                 "rank": "Ex-Inspector (Suspended)",
@@ -273,7 +322,7 @@ class AuthEngine:
                 "role": "INVESTIGATING_OFFICER",
                 "password": "HackedPassword123!",
                 "totp_secret": "OBSWY3DPEHPK3PXS",
-                "is_active": False  # Suspended to demonstrate zero-trust defense
+                "is_active": False
             }
         ]
 
@@ -297,7 +346,17 @@ class AuthEngine:
             self.users[user.badge_number] = user
 
     def get_user_by_badge(self, badge_number: str) -> Optional[OfficerUser]:
-        return self.users.get(badge_number.strip().upper())
+        badge = badge_number.strip().upper()
+        if badge in self.users:
+            return self.users[badge]
+        alias_map = {
+            "MHA-DIR-001": "I4C-DIR-001",
+            "NCRB-WS-782": "I4C-CRYPTO-782",
+            "NIA-TF-044": "FIU-IND-441",
+            "ROGUE-IO-007": "SUSPENDED-IO-007"
+        }
+        target = alias_map.get(badge)
+        return self.users.get(target) if target else None
 
     def record_audit(self, event_type: str, badge_number: str, ip_address: str, status: str, details: str):
         """Records security audit entry and notarizes into Section 63 BSA Merkle ledger."""
@@ -503,11 +562,11 @@ class AuthEngine:
         to enable 1-click evaluation by competition judges.
         """
         profiles = [
-            ("MHA-DIR-001", "ApexSecure2025!", "MHA Apex National Director (Super Admin)"),
-            ("NCRB-WS-782", "NcrbInvestigator#1", "NCRB Women Safety IO"),
-            ("NIA-TF-044", "NiaTerrorFin$99", "NIA Financial Intel Supervisor"),
-            ("MH-CYBER-109", "StatePoliceIO*24", "State Police Cyber Crime IO"),
-            ("ROGUE-IO-007", "HackedPassword123!", "Rogue / Suspended Test Persona")
+            ("I4C-DIR-001", "ApexSecure2025!", "I4C Apex National Director (Super Admin)"),
+            ("I4C-CRYPTO-782", "I4cCryptoInvestigator#1", "I4C Blockchain Forensics & VASP Attribution IO"),
+            ("FIU-IND-441", "FiuIndVdaNotice$99", "FIU-IND VDA Compliance Liaison Director"),
+            ("MH-CYBER-109", "StatePoliceIO*24", "State Cyber Crime (1930 Fraud Taskforce)"),
+            ("SUSPENDED-IO-007", "HackedPassword123!", "Suspended IO (Zero-Trust Test Persona)")
         ]
 
         guide = []

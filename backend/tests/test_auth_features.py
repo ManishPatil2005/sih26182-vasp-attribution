@@ -247,3 +247,33 @@ def test_authenticated_action_audit_attribution():
     last_block = audit_ledger.chain[-1]
     assert "NCRB-WS-782" in last_block["officer_id"]
 
+
+def test_sih26182_i4c_fiu_personas_login():
+    """Verify SIH26182 I4C and FIU-IND official personas login flow."""
+    # Test I4C Crypto Investigator login with TOTP
+    user_i4c = auth_engine.get_user_by_badge("I4C-CRYPTO-782")
+    assert user_i4c is not None
+    assert "VASP Attribution" in user_i4c.rank
+    assert user_i4c.agency_code == "I4C_BLOCKCHAIN_OPS"
+    code = auth_engine.generate_current_totp(user_i4c.totp_secret)
+
+    resp = client.post("/api/v1/auth/login", json={
+        "badge_number": "I4C-CRYPTO-782",
+        "password": "I4cCryptoInvestigator#1",
+        "mfa_code": code
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "AUTHENTICATED"
+    assert data["session"]["badge_number"] == "I4C-CRYPTO-782"
+    assert data["session"]["agency_code"] == "I4C_BLOCKCHAIN_OPS"
+
+    # Test Suspended IO zero-trust rejection
+    bad_resp = client.post("/api/v1/auth/login", json={
+        "badge_number": "SUSPENDED-IO-007",
+        "password": "HackedPassword123!"
+    })
+    assert bad_resp.status_code == 401
+    assert "SUSPENDED" in bad_resp.json()["detail"]
+
+

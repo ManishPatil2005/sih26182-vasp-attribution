@@ -24,18 +24,36 @@ class AgencyRBACEngine:
         self.profiles: Dict[str, AgencyProfile] = {
             "MHA_APEX_COMMAND": AgencyProfile(
                 agency_code="MHA_APEX_COMMAND",
-                agency_name="Ministry of Home Affairs (Apex National Security Command)",
+                agency_name="Ministry of Home Affairs & I4C (Apex National Security Command)",
                 clearance_level="TOP_SECRET_APEX",
-                description="Unrestricted national overview, interstate syndicate operations, warrant issuance, and cross-border intelligence feeds.",
+                description="Unrestricted national overview, blockchain forensics, VASP attribution, Section 94 BNSS statutory freezing, and cross-border intelligence feeds.",
+                can_issue_warrants=True,
+                can_view_undercover_assets=True,
+                can_export_court_evidence=True
+            ),
+            "I4C_BLOCKCHAIN_OPS": AgencyProfile(
+                agency_code="I4C_BLOCKCHAIN_OPS",
+                agency_name="Indian Cyber Crime Coordination Centre (I4C Blockchain Forensics & VASP Attribution)",
+                clearance_level="RESTRICTED_I4C_CRYPTO_OPS",
+                description="Lead taskforce on multi-chain cryptocurrency tracing, mule wallet clustering, and automated VASP attribution under SIH26182.",
+                can_issue_warrants=True,
+                can_view_undercover_assets=True,
+                can_export_court_evidence=True
+            ),
+            "FIU_IND_COMPLIANCE": AgencyProfile(
+                agency_code="FIU_IND_COMPLIANCE",
+                agency_name="Financial Intelligence Unit - India (FIU-IND VDA Compliance & AML Division)",
+                clearance_level="CONFIDENTIAL_FINANCIAL_INTEL",
+                description="FIU-IND registered VASP coordination, Section 94 BNSS wallet freezing directives, and anti-money laundering compliance.",
                 can_issue_warrants=True,
                 can_view_undercover_assets=True,
                 can_export_court_evidence=True
             ),
             "NCRB_WOMEN_SAFETY": AgencyProfile(
                 agency_code="NCRB_WOMEN_SAFETY",
-                agency_name="National Crime Records Bureau (Women Safety Division)",
+                agency_name="National Crime Records Bureau (Cybercrime Division)",
                 clearance_level="RESTRICTED_NCRB_OPS",
-                description="Lead taskforce on interstate human trafficking, cyber-grooming, and digital blackmail networks under BNS 2023.",
+                description="National cybercrime records, fraud tracking, and forensic support under BNS 2023.",
                 can_issue_warrants=True,
                 can_view_undercover_assets=True,
                 can_export_court_evidence=True
@@ -51,9 +69,9 @@ class AgencyRBACEngine:
             ),
             "STATE_POLICE_IO": AgencyProfile(
                 agency_code="STATE_POLICE_IO",
-                agency_name="State Police Cyber Crime Unit (Investigating Officer)",
+                agency_name="State Police Cyber Crime Unit (1930 Cyber Fraud Taskforce)",
                 clearance_level="OPERATIONAL_FIELD_CLEARANCE",
-                description="Field investigation, raid execution, and remand filings. Sensitive undercover source identities are automatically redacted.",
+                description="Field investigation, 1930 helpline complaint tracing, mule wallet freezing, and court evidence filing.",
                 can_issue_warrants=False,
                 can_view_undercover_assets=False,
                 can_export_court_evidence=True

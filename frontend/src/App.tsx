@@ -43,7 +43,7 @@ export const App: React.FC = () => {
   // Sovereign Zero-Trust Authentication State
   const [currentSession, setCurrentSession] = useState<OfficerSession | null>(() => {
     try {
-      const saved = localStorage.getItem('crimegraph_session');
+      const saved = localStorage.getItem('sahyog_vasp_session') || localStorage.getItem('crimegraph_session');
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
@@ -57,6 +57,7 @@ export const App: React.FC = () => {
       fetchCurrentSession(currentSession.token)
         .then((res) => {
           if (!res.valid) {
+            localStorage.removeItem('sahyog_vasp_session');
             localStorage.removeItem('crimegraph_session');
             setCurrentSession(null);
           }
@@ -91,7 +92,7 @@ export const App: React.FC = () => {
 
   const handleAuthenticated = (session: OfficerSession) => {
     setCurrentSession(session);
-    localStorage.setItem('crimegraph_session', JSON.stringify(session));
+    localStorage.setItem('sahyog_vasp_session', JSON.stringify(session));
     refreshGraph();
   };
 
@@ -99,6 +100,7 @@ export const App: React.FC = () => {
     if (currentSession?.token) {
       await logoutOfficer(currentSession.token).catch(() => {});
     }
+    localStorage.removeItem('sahyog_vasp_session');
     localStorage.removeItem('crimegraph_session');
     setCurrentSession(null);
   };

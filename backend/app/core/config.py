@@ -47,8 +47,8 @@ class Settings(BaseSettings):
     UPLOADS_DIR: str = os.path.join(DATA_DIR, "raw", "uploads")
 
     # Legal & Officer
-    OFFICER_STATION_CODE: str = "MHA-NCRB-HQ-01"
-    DEFAULT_IO_NAME: str = "Inspector R. K. Sharma (IO-782)"
+    OFFICER_STATION_CODE: str = "MHA-I4C-HQ-01"
+    DEFAULT_IO_NAME: str = "Insp. V. S. Chauhan (I4C-CRYPTO-782)"
 
 
 settings = Settings()
