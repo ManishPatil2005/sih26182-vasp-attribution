@@ -36,14 +36,24 @@ export function getActiveOfficerId(): string {
   return session ? `${session.full_name} (${session.badge_number})` : 'Inspector R. K. Sharma (IO-782)';
 }
 
-export async function fetchGraphData(agencyCode?: string): Promise<GraphData> {
-  const session = getActiveSession();
-  const agency = agencyCode || session?.agency_code;
-  const url = agency ? `${API_BASE}/graph/data?agency_code=${encodeURIComponent(agency)}` : `${API_BASE}/graph/data`;
-  const res = await fetch(url, {
+export async function fetchGraphData(): Promise<GraphData> {
+  const res = await fetch(`${API_BASE}/vasp/graph`, {
     headers: getAuthHeaders()
   });
-  if (!res.ok) throw new Error('Failed to fetch graph data');
+  if (!res.ok) {
+    // fallback if server still routing
+    const fallback = await fetch(`${API_BASE}/graph/data`, { headers: getAuthHeaders() });
+    if (!fallback.ok) throw new Error('Failed to fetch graph data');
+    return fallback.json();
+  }
+  return res.json();
+}
+
+export async function fetchCryptoGraph(): Promise<GraphData> {
+  const res = await fetch(`${API_BASE}/vasp/graph`, {
+    headers: getAuthHeaders()
+  });
+  if (!res.ok) throw new Error('Failed to fetch VASP crypto graph');
   return res.json();
 }
 

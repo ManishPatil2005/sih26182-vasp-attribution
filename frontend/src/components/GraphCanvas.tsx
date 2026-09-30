@@ -20,30 +20,26 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
   const [layoutName, setLayoutName] = useState<'cose' | 'concentric' | 'circle'>('cose');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Node color helper
+  // Node color helper for SIH26182 VASP Attribution & Blockchain Forensics
   const getNodeColor = useCallback((node: GraphNode) => {
-    if (node.type === 'PERSON') {
-      return node.risk_score >= 0.8 ? '#EF4444' : '#38BDF8';
-    }
     switch (node.type) {
-      case 'PHONE': return '#10B981';
-      case 'ACCOUNT': return '#F59E0B';
-      case 'VEHICLE': return '#EC4899';
-      case 'LOCATION': return '#A855F7';
-      case 'CRIME_INCIDENT': return '#DC2626';
-      default: return '#94A3B8';
+      case 'CRYPTO_WALLET': return '#F43F5E'; // Red/Rose: Unhosted Suspect Wallet
+      case 'MULE_WALLET': return '#F59E0B'; // Amber: Layer-1 / Layer-2 Mule Wallet
+      case 'MIXER_SERVICE': return '#A855F7'; // Purple: Tumbler / Mixer Escrow
+      case 'VASP_EXCHANGE': return '#06B6D4'; // Cyan Glowing: Centralized VASP Gateway
+      case 'KYC_HOLDER': return '#10B981'; // Emerald: Verified Indian Off-ramp
+      default: return '#38BDF8';
     }
   }, []);
 
   // Node shape helper
   const getNodeShape = useCallback((type: string) => {
     switch (type) {
-      case 'PERSON': return 'ellipse';
-      case 'PHONE': return 'diamond';
-      case 'ACCOUNT': return 'round-rectangle';
-      case 'VEHICLE': return 'hexagon';
-      case 'LOCATION': return 'rectangle';
-      case 'CRIME_INCIDENT': return 'octagon';
+      case 'CRYPTO_WALLET': return 'ellipse';
+      case 'MULE_WALLET': return 'diamond';
+      case 'MIXER_SERVICE': return 'octagon';
+      case 'VASP_EXCHANGE': return 'round-rectangle';
+      case 'KYC_HOLDER': return 'rectangle';
       default: return 'ellipse';
     }
   }, []);
@@ -101,36 +97,40 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
           }
         },
         {
-          selector: 'edge[relation = "CALLED"]',
-          style: {
-            'line-color': '#10B981',
-            'target-arrow-color': '#10B981',
-            'width': 2.5
-          }
-        },
-        {
-          selector: 'edge[relation = "TRANSFERRED_MONEY"]',
+          selector: 'edge[relation = "TRANSFERRED_CRYPTO"]',
           style: {
             'line-color': '#F59E0B',
             'target-arrow-color': '#F59E0B',
+            'width': 3,
+            'label': 'data(label)'
+          }
+        },
+        {
+          selector: 'edge[relation = "DEPOSITED_TO_VASP"]',
+          style: {
+            'line-color': '#06B6D4',
+            'target-arrow-color': '#06B6D4',
+            'width': 4,
+            'label': 'data(label)'
+          }
+        },
+        {
+          selector: 'edge[relation = "SWEEPS_TO_HOT_WALLET"]',
+          style: {
+            'line-color': '#818CF8',
+            'target-arrow-color': '#818CF8',
             'line-style': 'dashed',
-            'width': 3
+            'width': 2.5,
+            'label': 'data(label)'
           }
         },
         {
-          selector: 'edge[relation = "ACCUSED_IN"]',
+          selector: 'edge[relation = "CASHOUT_P2P"]',
           style: {
-            'line-color': '#DC2626',
-            'target-arrow-color': '#DC2626',
-            'width': 2.5
-          }
-        },
-        {
-          selector: 'edge[relation = "OPERATES"]',
-          style: {
-            'line-color': '#38BDF8',
-            'target-arrow-color': '#38BDF8',
-            'width': 2
+            'line-color': '#10B981',
+            'target-arrow-color': '#10B981',
+            'width': 3.5,
+            'label': 'data(label)'
           }
         }
       ]
@@ -179,7 +179,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
           id: e.id,
           source: e.source,
           target: e.target,
-          label: e.relation.replace('_', ' '),
+          label: e.properties?.amount ? `${e.properties.amount.toLocaleString()} ${e.properties.token || ''}` : e.relation.replace(/_/g, ' '),
           relation: e.relation,
           weight: e.weight
         }

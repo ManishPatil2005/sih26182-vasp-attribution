@@ -6,7 +6,11 @@ export type EntityType =
   | 'LOCATION'
   | 'CRIME_INCIDENT'
   | 'ORGANIZATION'
-  | 'CRYPTO_WALLET';
+  | 'CRYPTO_WALLET'
+  | 'VASP_EXCHANGE'
+  | 'MULE_WALLET'
+  | 'MIXER_SERVICE'
+  | 'KYC_HOLDER';
 
 export type RelationType = 
   | 'CALLED'
@@ -16,7 +20,11 @@ export type RelationType =
   | 'OPERATES'
   | 'ACCUSED_IN'
   | 'OWNS_VEHICLE'
-  | 'TRANSFERRED_CRYPTO';
+  | 'TRANSFERRED_CRYPTO'
+  | 'DEPOSITED_TO_VASP'
+  | 'SWEEPS_TO_HOT_WALLET'
+  | 'CASHOUT_P2P'
+  | 'LINKED_TO_KYC';
 
 export interface EvidenceReference {
   doc_id: string;
@@ -39,7 +47,7 @@ export interface GraphNode {
     betweenness?: number;
   };
   community_id?: number;
-  evidence_refs: EvidenceReference[];
+  evidence_refs?: EvidenceReference[];
 }
 
 export interface GraphEdge {
