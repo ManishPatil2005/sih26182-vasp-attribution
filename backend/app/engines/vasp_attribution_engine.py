@@ -573,5 +573,269 @@ Section 63 BSA 2023 Tamper-Evident SHA-256 Proof: {attr.merkle_evidence_hash}
             "statutory_compliance": "Section 94 BNSS 2023, Section 63 BSA 2023, PMLA 2002"
         }
 
+    def get_crypto_graph(self) -> Dict[str, Any]:
+        """
+        Builds a dedicated, multi-chain forensic knowledge graph representing
+        active I4C cyber fraud cases, unhosted wallets, mule hops, peeling chains,
+        and VASP deposit sweeps for interactive Cytoscape visualization.
+        """
+        nodes = [
+            # Case 1: Tron TRC-20 USDT Task Extortion Cluster
+            {
+                "id": "TTsY1v6BpxvU9jP1k2L4wE8rT992p",
+                "type": "CRYPTO_WALLET",
+                "label": "Suspect Unhosted Wallet (Tron)",
+                "properties": {
+                    "network": "TRON",
+                    "token": "USDT-TRC20",
+                    "balance": "50,000.00 USDT",
+                    "case_id": "SAHYOG-I4C-2026-8812",
+                    "status": "UNHOSTED_PRIVATE_KEY",
+                    "crime": "Digital Arrest / Extortion (INR 42.5L)"
+                },
+                "risk_score": 0.98,
+                "centrality": {"degree": 0.8, "betweenness": 0.85, "pagerank": 0.92}
+            },
+            {
+                "id": "TPy5mN3z7Qa9Xv2w88aL9KzP4rT54299",
+                "type": "MULE_WALLET",
+                "label": "Hop-1 Mule Wallet (Telegram OTC)",
+                "properties": {
+                    "network": "TRON",
+                    "role": "Layer-1 Smurfing Intermediary",
+                    "turnaround": "< 45 mins",
+                    "tainted_score": 0.94
+                },
+                "risk_score": 0.88,
+                "centrality": {"degree": 0.7, "betweenness": 0.9, "pagerank": 0.85}
+            },
+            {
+                "id": "TMu9kX2b7Qp9Yv1w88aL9KzP4rT54201",
+                "type": "VASP_EXCHANGE",
+                "label": "Binance Verified Deposit Gateway",
+                "properties": {
+                    "network": "TRON",
+                    "vasp_name": "Binance Exchange & P2P",
+                    "sahyog_reg_id": "SAHYOG-VASP-IND-001",
+                    "compliance_email": "case-assistance@binance.com",
+                    "nodal_officer": "Mr. Rajiv Khurana",
+                    "action_required": "Section 94 BNSS Freeze Directive"
+                },
+                "risk_score": 0.2,
+                "centrality": {"degree": 0.9, "betweenness": 0.95, "pagerank": 0.98}
+            },
+            {
+                "id": "TWd4WrZ9wn84f5x1hYvLp928374829104",
+                "type": "VASP_EXCHANGE",
+                "label": "Binance Hot Wallet #4 (Consolidation Pool)",
+                "properties": {
+                    "network": "TRON",
+                    "cluster_type": "EXCHANGE_HOT_WALLET",
+                    "daily_volume_usd": "$45,000,000"
+                },
+                "risk_score": 0.1,
+                "centrality": {"degree": 0.95, "betweenness": 0.98, "pagerank": 0.99}
+            },
+            {
+                "id": "KYC-BINANCE-P2P-9921",
+                "type": "KYC_HOLDER",
+                "label": "Identified P2P Trader (Off-Ramp)",
+                "properties": {
+                    "full_name": "Vikramaditya S. Verma",
+                    "kyc_pan": "ABC PV 8912 K",
+                    "aadhaar_hash": "SHA256:8891ac284910...",
+                    "linked_bank": "HDFC Bank (A/C: 501004928192)",
+                    "upi_handle": "vikram.verma@okhdfcbank"
+                },
+                "risk_score": 0.92,
+                "centrality": {"degree": 0.6, "betweenness": 0.7, "pagerank": 0.8}
+            },
+
+            # Case 2: Ethereum Task Fraud Direct Deposit to CoinDCX
+            {
+                "id": "0x71C83e20B13b0F2843A166f2C8f152d80d2d3489",
+                "type": "CRYPTO_WALLET",
+                "label": "Suspect Unhosted Wallet (Ethereum)",
+                "properties": {
+                    "network": "ETHEREUM",
+                    "token": "USDT-ERC20",
+                    "balance": "32,000.00 USDT",
+                    "case_id": "SAHYOG-I4C-2026-7491",
+                    "status": "UNHOSTED_METAMASK",
+                    "crime": "Telegram Part-Time Rating Scam (INR 28L)"
+                },
+                "risk_score": 0.95,
+                "centrality": {"degree": 0.75, "betweenness": 0.8, "pagerank": 0.88}
+            },
+            {
+                "id": "0x94845333028B1204Fbe14E1278Fd4Adde46B22ce",
+                "type": "VASP_EXCHANGE",
+                "label": "CoinDCX verified Ingress Address",
+                "properties": {
+                    "network": "ETHEREUM",
+                    "vasp_name": "CoinDCX (Neblio Technologies)",
+                    "sahyog_reg_id": "SAHYOG-VASP-IND-002",
+                    "compliance_email": "lea-support@coindcx.com",
+                    "customer_uid": "DCX-99182",
+                    "action_required": "Section 94 BNSS Freeze Directive"
+                },
+                "risk_score": 0.15,
+                "centrality": {"degree": 0.85, "betweenness": 0.9, "pagerank": 0.95}
+            },
+
+            # Case 3: Bitcoin Mixer & WazirX UTXO Ingress
+            {
+                "id": "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq",
+                "type": "CRYPTO_WALLET",
+                "label": "Suspect Bitcoin Ransomware Wallet",
+                "properties": {
+                    "network": "BITCOIN",
+                    "token": "BTC",
+                    "balance": "1.45 BTC",
+                    "status": "COLD_EXTORTION_ADDRESS"
+                },
+                "risk_score": 0.99,
+                "centrality": {"degree": 0.7, "betweenness": 0.75, "pagerank": 0.82}
+            },
+            {
+                "id": "bc1qmixertumblerblender99281",
+                "type": "MIXER_SERVICE",
+                "label": "Blender.io Darknet Tumbler",
+                "properties": {
+                    "network": "BITCOIN",
+                    "service": "Obfuscation Mixer",
+                    "sanctioned_status": "OFAC Sanctioned Entity"
+                },
+                "risk_score": 0.99,
+                "centrality": {"degree": 0.85, "betweenness": 0.95, "pagerank": 0.9}
+            },
+            {
+                "id": "1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s",
+                "type": "VASP_EXCHANGE",
+                "label": "WazirX India Bitcoin Deposit Gateway",
+                "properties": {
+                    "network": "BITCOIN",
+                    "vasp_name": "WazirX India",
+                    "sahyog_reg_id": "SAHYOG-VASP-IND-004",
+                    "compliance_email": "nodal@wazirx.com"
+                },
+                "risk_score": 0.2,
+                "centrality": {"degree": 0.8, "betweenness": 0.85, "pagerank": 0.9}
+            }
+        ]
+
+        edges = [
+            # Tron Flow: Suspect -> Mule -> Binance Ingress -> Binance Hot -> P2P Offramp
+            {
+                "id": "edge_tron_hop1",
+                "source": "TTsY1v6BpxvU9jP1k2L4wE8rT992p",
+                "target": "TPy5mN3z7Qa9Xv2w88aL9KzP4rT54299",
+                "relation": "TRANSFERRED_CRYPTO",
+                "properties": {
+                    "amount": 50000.0,
+                    "token": "USDT-TRC20",
+                    "tx_hash": "0x78ab91c8914da702b8d8102947192847192801940129",
+                    "hop": 1
+                },
+                "weight": 5.0
+            },
+            {
+                "id": "edge_tron_hop2",
+                "source": "TPy5mN3z7Qa9Xv2w88aL9KzP4rT54299",
+                "target": "TMu9kX2b7Qp9Yv1w88aL9KzP4rT54201",
+                "relation": "DEPOSITED_TO_VASP",
+                "properties": {
+                    "amount": 49850.0,
+                    "token": "USDT-TRC20",
+                    "tx_hash": "0x89dc2019472910482019482019482019482019482019",
+                    "hop": 2,
+                    "attribution": "CONFIRMED_VASP_INGRESS"
+                },
+                "weight": 8.0
+            },
+            {
+                "id": "edge_tron_sweep",
+                "source": "TMu9kX2b7Qp9Yv1w88aL9KzP4rT54201",
+                "target": "TWd4WrZ9wn84f5x1hYvLp928374829104",
+                "relation": "SWEEPS_TO_HOT_WALLET",
+                "properties": {
+                    "amount": 49850.0,
+                    "token": "USDT-TRC20",
+                    "tx_hash": "0x12ef9019284710294810294810294810294810294810"
+                },
+                "weight": 3.0
+            },
+            {
+                "id": "edge_tron_p2p",
+                "source": "TMu9kX2b7Qp9Yv1w88aL9KzP4rT54201",
+                "target": "KYC-BINANCE-P2P-9921",
+                "relation": "CASHOUT_P2P",
+                "properties": {
+                    "fiat_inr": 4250000.0,
+                    "p2p_order_id": "P2P-IND-2026-992182",
+                    "counterparty_bank": "HDFC Bank"
+                },
+                "weight": 9.0
+            },
+
+            # Ethereum Flow: Suspect -> CoinDCX Direct Ingress
+            {
+                "id": "edge_eth_direct",
+                "source": "0x71C83e20B13b0F2843A166f2C8f152d80d2d3489",
+                "target": "0x94845333028B1204Fbe14E1278Fd4Adde46B22ce",
+                "relation": "DEPOSITED_TO_VASP",
+                "properties": {
+                    "amount": 32000.0,
+                    "token": "USDT-ERC20",
+                    "tx_hash": "0xfa910294810294810294810294810294810294810294",
+                    "hop": 1,
+                    "attribution": "DIRECT_VASP_INGRESS"
+                },
+                "weight": 7.0
+            },
+
+            # Bitcoin Flow: Suspect -> Blender.io Tumbler -> WazirX Ingress
+            {
+                "id": "edge_btc_mixer",
+                "source": "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq",
+                "target": "bc1qmixertumblerblender99281",
+                "relation": "TRANSFERRED_CRYPTO",
+                "properties": {
+                    "amount": 1.45,
+                    "token": "BTC",
+                    "tx_hash": "0x3344a019284710294810294810294810294810294810",
+                    "hop": 1
+                },
+                "weight": 6.0
+            },
+            {
+                "id": "edge_btc_wazirx",
+                "source": "bc1qmixertumblerblender99281",
+                "target": "1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s",
+                "relation": "DEPOSITED_TO_VASP",
+                "properties": {
+                    "amount": 1.43,
+                    "token": "BTC",
+                    "tx_hash": "0x7788b019284710294810294810294810294810294810",
+                    "hop": 2,
+                    "attribution": "TUMBLER_VASP_INGRESS"
+                },
+                "weight": 8.0
+            }
+        ]
+
+        return {
+            "nodes": nodes,
+            "edges": edges,
+            "metadata": {
+                "system": "SAHYOG-VASP AI (SIH26182)",
+                "total_suspect_wallets": 3,
+                "total_mule_nodes": 2,
+                "total_vasps_identified": 3,
+                "chains_represented": ["TRON", "ETHEREUM", "BITCOIN"],
+                "statutory_mandate": "Section 94 BNSS, 2023 & Section 63 BSA, 2023"
+            }
+        }
+
 
 vasp_engine = VASPAttributionEngine()

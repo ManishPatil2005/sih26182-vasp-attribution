@@ -65,3 +65,12 @@ async def get_supported_chains():
     (Tron TRC-20, Ethereum ERC-20, Bitcoin UTXO, BNB Chain, Solana, Polygon).
     """
     return vasp_engine.get_supported_chains_summary()
+
+
+@router.get("/graph")
+async def get_vasp_attribution_graph():
+    """
+    Returns the multi-chain cryptocurrency forensic graph (nodes & edges)
+    for interactive visual analysis in the Cytoscape workstation canvas.
+    """
+    return vasp_engine.get_crypto_graph()

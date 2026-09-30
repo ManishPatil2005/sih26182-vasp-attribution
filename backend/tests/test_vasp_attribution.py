@@ -155,3 +155,19 @@ def test_supported_chains_and_metrics_endpoints():
     assert metrics["overall_attribution_accuracy_pct"] >= 95.0
     assert metrics["turnaround_reduction_pct"] > 99.0
     assert metrics["total_crypto_assets_frozen_inr"] > 10000000.0
+
+
+def test_crypto_graph_endpoint():
+    """Verify dedicated multi-chain crypto graph returns suspect, mule, and VASP nodes."""
+    res = client.get("/api/v1/vasp/graph")
+    assert res.status_code == 200
+    data = res.json()
+    assert "nodes" in data
+    assert "edges" in data
+    assert len(data["nodes"]) >= 8
+    assert len(data["edges"]) >= 6
+
+    node_types = [n["type"] for n in data["nodes"]]
+    assert "CRYPTO_WALLET" in node_types
+    assert "VASP_EXCHANGE" in node_types
+    assert "MULE_WALLET" in node_types
