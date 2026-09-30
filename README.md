@@ -19,6 +19,7 @@
 [![FIU-IND Registry](https://img.shields.io/badge/FIU--IND-Compliant%20VASP%20Clustering-cyan.svg)](backend/app/engines/vasp_attribution_engine.py)
 [![Chains Supported](https://img.shields.io/badge/Multi--Chain-TRON%20%7C%20ETH%20%7C%20BTC%20%7C%20BSC%20%7C%20SOL-purple.svg)](backend/app/models/schemas.py)
 [![Frontend Speed](https://img.shields.io/badge/Vite-Built%20in%20193ms-orange.svg)](frontend/)
+[![AI Credits](https://img.shields.io/badge/AI%20Credits-Unlimited%20Compute%20Active-brightgreen.svg)](#)
 
 [📘 Master Technical Documentation](docs/SIH26182_COMPLETE_DOCUMENTATION.md) &bull; [📜 Chronological Progress & Process Log](docs/PROGRESS_REPORT_2026.md)
 
