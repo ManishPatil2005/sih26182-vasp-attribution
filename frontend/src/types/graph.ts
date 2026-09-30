@@ -588,3 +588,86 @@ export interface SahyogKPIMetrics {
   top_attributed_vasps: Array<{ name: string; share_pct: number }>;
   statutory_compliance: string;
 }
+
+// SIH26182 V3 Advanced Typology, Mixer Taint, and Court Evidence Types
+export interface MixerExposure {
+  is_exposed: boolean;
+  mixer_name?: string;
+  taint_percentage: number;
+  hop_proximity: number;
+  direct_exposure: boolean;
+  sanctioned_entity: boolean;
+}
+
+export interface PeelingChainAnalysis {
+  is_peeling_chain: boolean;
+  peel_ratio: number;
+  detected_change_addresses: string[];
+  hop_velocity_minutes: number;
+  peel_pattern_type: string;
+}
+
+export interface TypologyDeepScan {
+  target_wallet: string;
+  network: BlockchainNetwork;
+  primary_typology: string;
+  risk_level: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  composite_risk_score: number;
+  peeling_analysis: PeelingChainAnalysis;
+  mixer_exposure: MixerExposure;
+  smurfing_indicator: boolean;
+  smurfing_mule_count: number;
+  rapid_offramp_velocity_score: number;
+  estimated_time_to_liquidation_mins: number;
+  statutory_urgency: string;
+  mitigation_actions: string[];
+}
+
+export interface Live1930Alert {
+  alert_id: string;
+  incident_time: string;
+  victim_city: string;
+  crime_category: string;
+  victim_reported_loss_inr: number;
+  unhosted_suspect_wallet: string;
+  detected_network: string;
+  attributed_vasp: string;
+  hop_count: number;
+  confidence_score: number;
+  statutory_action: string;
+  requires_immediate_freeze: boolean;
+}
+
+export interface CourtCertificateBSA63 {
+  certificate_id: string;
+  statutory_act: string;
+  enforcement_directive: string;
+  issuing_authority: string;
+  officer_badge: string;
+  court_jurisdiction: string;
+  fir_reference: string;
+  police_station: string;
+  target_unhosted_wallet: string;
+  blockchain_network: string;
+  nearest_vasp_name: string;
+  vasp_fiu_reg_id: string;
+  vasp_deposit_address: string;
+  frozen_amount_inr: number;
+  frozen_amount_crypto: number;
+  token_symbol: string;
+  merkle_evidence_root: string;
+  chain_of_custody_hashes: string[];
+  system_hash_sha256: string;
+  notarized_timestamp_utc: string;
+  legal_declaration: string;
+  qr_verification_payload: string;
+}
+
+export interface BlockchainGatewayStatus {
+  status: string;
+  providers: Record<string, string>;
+  engine_version: string;
+  supported_typologies: string[];
+  latency_ms: number;
+}
+

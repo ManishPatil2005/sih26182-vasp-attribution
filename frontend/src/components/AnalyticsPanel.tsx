@@ -315,13 +315,21 @@ export const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({
                   </div>
                 </div>
 
-                <button
-                  onClick={() => onOpenNoticeModal(recentAttribution)}
-                  className="w-full py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-[11px] uppercase tracking-wider rounded-lg shadow transition flex items-center justify-center space-x-1 cursor-pointer"
-                >
-                  <Scale className="w-3.5 h-3.5" />
-                  <span>Issue Sec 94 BNSS Freeze Notice</span>
-                </button>
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    onClick={() => onOpenNoticeModal(recentAttribution)}
+                    className="py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-[10px] uppercase tracking-wider rounded-lg shadow transition flex items-center justify-center space-x-1 cursor-pointer"
+                  >
+                    <Scale className="w-3.5 h-3.5" />
+                    <span>Freeze Notice</span>
+                  </button>
+                  <button
+                    onClick={() => onOpenNoticeModal(recentAttribution)}
+                    className="py-2 bg-purple-800 hover:bg-purple-700 text-white font-bold text-[10px] uppercase tracking-wider rounded-lg shadow transition flex items-center justify-center space-x-1 cursor-pointer"
+                  >
+                    <span>🔍 Typology &amp; BSA</span>
+                  </button>
+                </div>
               </div>
             )}
 

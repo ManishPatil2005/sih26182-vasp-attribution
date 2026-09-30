@@ -505,3 +505,51 @@ export async function fetchSahyogMetrics(): Promise<import('../types/graph').Sah
   if (!res.ok) throw new Error('Failed to fetch Sahyog metrics');
   return res.json();
 }
+
+export async function fetchWalletTypology(wallet: string, network?: import('../types/graph').BlockchainNetwork): Promise<import('../types/graph').TypologyDeepScan> {
+  const params = network ? `?network=${network}` : '';
+  const res = await fetch(`${API_BASE}/vasp/typology/${encodeURIComponent(wallet)}${params}`, {
+    headers: getAuthHeaders()
+  });
+  if (!res.ok) throw new Error(`Failed to fetch typology scan for wallet ${wallet}`);
+  return res.json();
+}
+
+export async function fetchLive1930Feed(count: number = 6): Promise<import('../types/graph').Live1930Alert[]> {
+  const res = await fetch(`${API_BASE}/vasp/live-1930-feed?count=${count}`, {
+    headers: getAuthHeaders()
+  });
+  if (!res.ok) throw new Error('Failed to fetch live 1930 feed');
+  return res.json();
+}
+
+export async function fetchBSACourtCertificate(requisitionId: string): Promise<import('../types/graph').CourtCertificateBSA63> {
+  const res = await fetch(`${API_BASE}/sahyog/requisitions/${encodeURIComponent(requisitionId)}/bsa-certificate`, {
+    headers: getAuthHeaders()
+  });
+  if (!res.ok) throw new Error('Failed to generate Section 63 BSA court certificate');
+  return res.json();
+}
+
+export async function fetchPrintableNotice(requisitionId: string): Promise<{
+  requisition_id: string;
+  raw_notice_text: string;
+  target_vasp: string;
+  target_vasp_compliance: string;
+  statutory_deadline_hours: number;
+}> {
+  const res = await fetch(`${API_BASE}/sahyog/requisitions/${encodeURIComponent(requisitionId)}/printable`, {
+    headers: getAuthHeaders()
+  });
+  if (!res.ok) throw new Error('Failed to fetch printable notice');
+  return res.json();
+}
+
+export async function fetchGatewayStatus(): Promise<import('../types/graph').BlockchainGatewayStatus> {
+  const res = await fetch(`${API_BASE}/vasp/gateway-status`, {
+    headers: getAuthHeaders()
+  });
+  if (!res.ok) throw new Error('Failed to fetch gateway status');
+  return res.json();
+}
+

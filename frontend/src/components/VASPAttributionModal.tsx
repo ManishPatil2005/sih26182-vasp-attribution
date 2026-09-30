@@ -5,7 +5,10 @@ import {
   fetchSahyogCases,
   generateSahyogFreezeNotice,
   fetchFreezeRequisitions,
-  fetchSahyogMetrics
+  fetchSahyogMetrics,
+  fetchWalletTypology,
+  fetchLive1930Feed,
+  fetchBSACourtCertificate
 } from '../services/api';
 import type {
   BlockchainNetwork,
@@ -13,7 +16,10 @@ import type {
   VASPAttributionResult,
   SahyogCase,
   SahyogFreezeRequisition,
-  SahyogKPIMetrics
+  SahyogKPIMetrics,
+  TypologyDeepScan,
+  Live1930Alert,
+  CourtCertificateBSA63
 } from '../types/graph';
 
 interface VASPAttributionModalProps {
@@ -29,7 +35,7 @@ export const VASPAttributionModal: React.FC<VASPAttributionModalProps> = ({
   initialWallet = 'TTsY1v6BpxvU9jP1k2L4wE8rT992p',
   initialNetwork = 'TRON'
 }) => {
-  const [activeTab, setActiveTab] = useState<'attribution' | 'registry' | 'requisitions' | 'cases'>('attribution');
+  const [activeTab, setActiveTab] = useState<'attribution' | 'typology' | 'bsa-court' | 'live-feed' | 'registry' | 'requisitions' | 'cases'>('attribution');
   const [network, setNetwork] = useState<BlockchainNetwork>(initialNetwork);
   const [walletInput, setWalletInput] = useState<string>(initialWallet);
   const [loading, setLoading] = useState<boolean>(false);
@@ -43,6 +49,15 @@ export const VASPAttributionModal: React.FC<VASPAttributionModalProps> = ({
   const [metrics, setMetrics] = useState<SahyogKPIMetrics | null>(null);
   const [generatedNotice, setGeneratedNotice] = useState<SahyogFreezeRequisition | null>(null);
   const [noticeGenerating, setNoticeGenerating] = useState<boolean>(false);
+
+  // V3 States: Typology, Court Evidence, Live 1930
+  const [typologyScan, setTypologyScan] = useState<TypologyDeepScan | null>(null);
+  const [typologyLoading, setTypologyLoading] = useState<boolean>(false);
+  const [courtCertificate, setCourtCertificate] = useState<CourtCertificateBSA63 | null>(null);
+  const [certLoading, setCertLoading] = useState<boolean>(false);
+  const [live1930Alerts, setLive1930Alerts] = useState<Live1930Alert[]>([]);
+  const [liveLoading, setLiveLoading] = useState<boolean>(false);
+  const [copiedCert, setCopiedCert] = useState<boolean>(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -73,15 +88,21 @@ export const VASPAttributionModal: React.FC<VASPAttributionModalProps> = ({
   const handleRunAttribution = async (walletToTrace: string, net: BlockchainNetwork) => {
     if (!walletToTrace.trim()) return;
     setLoading(true);
+    setTypologyLoading(true);
     setError(null);
     try {
-      const result = await attributeWallet(walletToTrace.trim(), net);
+      const [result, typResult] = await Promise.all([
+        attributeWallet(walletToTrace.trim(), net),
+        fetchWalletTypology(walletToTrace.trim(), net).catch(() => null)
+      ]);
       setAttribution(result);
+      if (typResult) setTypologyScan(typResult);
       setGeneratedNotice(null);
     } catch (err: any) {
       setError(err.message || 'Failed to attribute wallet to nearest VASP');
     } finally {
       setLoading(false);
+      setTypologyLoading(false);
     }
   };
 
@@ -92,13 +113,38 @@ export const VASPAttributionModal: React.FC<VASPAttributionModalProps> = ({
       const caseId = sahyogCases[0]?.case_id || 'SAHYOG-I4C-2026-8812';
       const notice = await generateSahyogFreezeNotice(caseId, attribution.query_wallet);
       setGeneratedNotice(notice);
-      // Refresh requisitions list
       const updatedReqs = await fetchFreezeRequisitions();
       setRequisitions(updatedReqs);
+      fetchBSACourtCertificate(notice.requisition_id).then(c => setCourtCertificate(c)).catch(() => {});
     } catch (err: any) {
       alert('Notice generation failed: ' + (err.message || 'Server error'));
     } finally {
       setNoticeGenerating(false);
+    }
+  };
+
+  const handleLoadCourtCertificate = async () => {
+    setCertLoading(true);
+    try {
+      const reqId = generatedNotice?.requisition_id || requisitions[0]?.requisition_id || 'default';
+      const cert = await fetchBSACourtCertificate(reqId);
+      setCourtCertificate(cert);
+    } catch (err: any) {
+      console.error('Failed to load court certificate:', err);
+    } finally {
+      setCertLoading(false);
+    }
+  };
+
+  const handleLoadLiveFeed = async () => {
+    setLiveLoading(true);
+    try {
+      const feed = await fetchLive1930Feed(6);
+      setLive1930Alerts(feed);
+    } catch (err: any) {
+      console.error('Failed to load live 1930 feed:', err);
+    } finally {
+      setLiveLoading(false);
     }
   };
 
@@ -177,10 +223,10 @@ export const VASPAttributionModal: React.FC<VASPAttributionModalProps> = ({
         )}
 
         {/* Navigation Tabs */}
-        <div className="flex space-x-1 px-6 border-b border-slate-800 bg-[#070b13]">
+        <div className="flex space-x-1 px-6 border-b border-slate-800 bg-[#070b13] overflow-x-auto">
           <button
             onClick={() => setActiveTab('attribution')}
-            className={`px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition border-b-2 ${
+            className={`px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider transition border-b-2 whitespace-nowrap ${
               activeTab === 'attribution'
                 ? 'border-cyan-400 text-cyan-300 bg-cyan-950/20'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -189,34 +235,75 @@ export const VASPAttributionModal: React.FC<VASPAttributionModalProps> = ({
             ⚡ Live Wallet Attribution
           </button>
           <button
+            onClick={() => {
+              setActiveTab('typology');
+              if (!typologyScan && attribution) {
+                fetchWalletTypology(attribution.query_wallet, network).then(t => setTypologyScan(t));
+              }
+            }}
+            className={`px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider transition border-b-2 whitespace-nowrap ${
+              activeTab === 'typology'
+                ? 'border-purple-400 text-purple-300 bg-purple-950/20'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            🔍 Typology &amp; Mixer Taint
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('bsa-court');
+              handleLoadCourtCertificate();
+            }}
+            className={`px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider transition border-b-2 whitespace-nowrap ${
+              activeTab === 'bsa-court'
+                ? 'border-emerald-400 text-emerald-300 bg-emerald-950/20'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            ⚖️ BSA 2023 Court Evidence
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('live-feed');
+              handleLoadLiveFeed();
+            }}
+            className={`px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider transition border-b-2 whitespace-nowrap ${
+              activeTab === 'live-feed'
+                ? 'border-rose-400 text-rose-300 bg-rose-950/20'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            🚨 Live 1930 Helpline Feed
+          </button>
+          <button
             onClick={() => setActiveTab('cases')}
-            className={`px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition border-b-2 ${
+            className={`px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider transition border-b-2 whitespace-nowrap ${
               activeTab === 'cases'
                 ? 'border-cyan-400 text-cyan-300 bg-cyan-950/20'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            📁 SAHYOG Case Dossiers ({sahyogCases.length})
+            📁 SAHYOG Cases ({sahyogCases.length})
           </button>
           <button
             onClick={() => setActiveTab('registry')}
-            className={`px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition border-b-2 ${
+            className={`px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider transition border-b-2 whitespace-nowrap ${
               activeTab === 'registry'
                 ? 'border-cyan-400 text-cyan-300 bg-cyan-950/20'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            🏛️ FIU-IND VASP Registry ({vaspClusters.length})
+            🏛️ FIU-IND Registry ({vaspClusters.length})
           </button>
           <button
             onClick={() => setActiveTab('requisitions')}
-            className={`px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition border-b-2 ${
+            className={`px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider transition border-b-2 whitespace-nowrap ${
               activeTab === 'requisitions'
                 ? 'border-cyan-400 text-cyan-300 bg-cyan-950/20'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            📜 Sec 94 BNSS Freezing Notices ({requisitions.length})
+            📜 Freezing Notices ({requisitions.length})
           </button>
         </div>
 
@@ -508,15 +595,26 @@ export const VASPAttributionModal: React.FC<VASPAttributionModalProps> = ({
                             Requisition ID: {generatedNotice.requisition_id}
                           </span>
                         </div>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(generatedNotice.notice_text);
-                            alert('Statutory Section 94 BNSS Notice copied to clipboard!');
-                          }}
-                          className="px-3 py-1 bg-emerald-900/40 hover:bg-emerald-900 text-emerald-300 border border-emerald-700/60 text-xs font-bold rounded transition"
-                        >
-                          📋 Copy Official Legal Notice
-                        </button>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => {
+                              handleLoadCourtCertificate();
+                              setActiveTab('bsa-court');
+                            }}
+                            className="px-3 py-1 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white text-xs font-bold rounded shadow transition cursor-pointer"
+                          >
+                            ⚖️ View Court-Admissible BSA 2023 Evidence
+                          </button>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(generatedNotice.notice_text);
+                              alert('Statutory Section 94 BNSS Notice copied to clipboard!');
+                            }}
+                            className="px-3 py-1 bg-emerald-900/40 hover:bg-emerald-900 text-emerald-300 border border-emerald-700/60 text-xs font-bold rounded transition cursor-pointer"
+                          >
+                            📋 Copy Legal Notice
+                          </button>
+                        </div>
                       </div>
 
                       <pre className="font-mono text-xs text-slate-300 bg-slate-900 p-4 rounded-lg overflow-x-auto whitespace-pre leading-relaxed border border-slate-800">
@@ -533,6 +631,391 @@ export const VASPAttributionModal: React.FC<VASPAttributionModalProps> = ({
                 </div>
               )}
 
+            </div>
+          )}
+
+          {/* TAB: TYPOLOGY & MIXER TAINT */}
+          {activeTab === 'typology' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-purple-300 flex items-center space-x-2">
+                    <span>🔍 Advanced Laundering Typology &amp; Mixer Taint Analysis</span>
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Heuristic peeling chain tracking, OFAC/FIU-IND sanctioned mixer detection, and off-ramp velocity
+                  </p>
+                </div>
+                {typologyScan && (
+                  <span className={`px-2.5 py-1 text-xs font-bold rounded uppercase border ${
+                    typologyScan.risk_level === 'CRITICAL' ? 'bg-red-950 text-red-300 border-red-800' :
+                    typologyScan.risk_level === 'HIGH' ? 'bg-amber-950 text-amber-300 border-amber-800' :
+                    'bg-cyan-950 text-cyan-300 border-cyan-800'
+                  }`}>
+                    {typologyScan.risk_level} RISK ({typologyScan.composite_risk_score}/100)
+                  </span>
+                )}
+              </div>
+
+              {typologyLoading ? (
+                <div className="p-12 text-center text-slate-400">
+                  <span className="animate-spin inline-block w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full mb-2"></span>
+                  <p>Executing heuristic peeling chain scan &amp; taint propagation...</p>
+                </div>
+              ) : !typologyScan ? (
+                <div className="bg-slate-900/60 border border-slate-800 p-8 rounded-xl text-center text-slate-400 text-xs">
+                  No typology scan performed yet. Select or trace a suspect wallet first.
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Overview Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    {/* Card 1: Primary Typology */}
+                    <div className="bg-slate-900/90 border border-purple-900/40 rounded-xl p-4 space-y-2">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Primary Modus Operandi</span>
+                      <h4 className="font-black text-purple-200 text-sm">{typologyScan.primary_typology}</h4>
+                      <div className="text-xs text-slate-300 font-mono">
+                        Target: <span className="text-cyan-300">{typologyScan.target_wallet.substring(0, 16)}...</span>
+                      </div>
+                      <div className="pt-2 border-t border-slate-800 text-[11px] text-amber-300">
+                        {typologyScan.statutory_urgency}
+                      </div>
+                    </div>
+
+                    {/* Card 2: Peeling Chain Breakdown */}
+                    <div className="bg-slate-900/90 border border-cyan-900/40 rounded-xl p-4 space-y-2">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Peeling Chain Heuristics</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-300">Peeling Pattern:</span>
+                        <span className="px-2 py-0.5 bg-cyan-950 text-cyan-300 border border-cyan-800 rounded font-bold text-xs">
+                          {typologyScan.peeling_analysis.is_peeling_chain ? 'DETECTED' : 'NONE'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-slate-300">
+                        <span>Peel Ratio per Hop:</span>
+                        <strong className="text-amber-400 font-mono">{typologyScan.peeling_analysis.peel_ratio}%</strong>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-slate-300">
+                        <span>Hop Velocity:</span>
+                        <strong className="text-cyan-300 font-mono">~{typologyScan.peeling_analysis.hop_velocity_minutes} mins/hop</strong>
+                      </div>
+                    </div>
+
+                    {/* Card 3: Mixer & Tumbler Exposure */}
+                    <div className="bg-slate-900/90 border border-rose-900/40 rounded-xl p-4 space-y-2">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Mixer / Darknet Taint</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-300">Mixer Contamination:</span>
+                        <span className={`px-2 py-0.5 rounded font-bold text-xs ${
+                          typologyScan.mixer_exposure.is_exposed
+                            ? 'bg-rose-950 text-rose-300 border border-rose-800'
+                            : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                        }`}>
+                          {typologyScan.mixer_exposure.is_exposed ? `${typologyScan.mixer_exposure.taint_percentage}% TAINT` : 'CLEAN (0%)'}
+                        </span>
+                      </div>
+                      {typologyScan.mixer_exposure.is_exposed && (
+                        <>
+                          <div className="text-xs text-slate-300">
+                            Identified Service: <strong className="text-rose-400">{typologyScan.mixer_exposure.mixer_name}</strong>
+                          </div>
+                          <div className="text-[11px] text-slate-400">
+                            Proximity: <strong>{typologyScan.mixer_exposure.hop_proximity} hop(s)</strong> &bull; {typologyScan.mixer_exposure.sanctioned_entity ? '⚠️ Sanctioned Entity' : 'High Risk'}
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                  </div>
+
+                  {/* Detected Change Addresses */}
+                  {typologyScan.peeling_analysis.detected_change_addresses.length > 0 && (
+                    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 space-y-2">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Detected Unspent Change Addresses (Peeling Remainder)
+                      </span>
+                      <div className="space-y-1">
+                        {typologyScan.peeling_analysis.detected_change_addresses.map((chg, cIdx) => (
+                          <div key={cIdx} className="font-mono text-xs text-slate-300 bg-slate-950 p-2 rounded border border-slate-800 flex items-center justify-between">
+                            <span>{chg}</span>
+                            <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 text-slate-400 rounded">Change Output #{cIdx + 1}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Statutory Mitigation Protocol */}
+                  <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 space-y-2">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      Recommended Law Enforcement Action Protocol (I4C SOP)
+                    </span>
+                    <ul className="space-y-1.5 text-xs text-slate-300">
+                      {typologyScan.mitigation_actions.map((act, aIdx) => (
+                        <li key={aIdx} className="flex items-center space-x-2">
+                          <span className="text-cyan-400">✔</span>
+                          <span>{act}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB: BSA 2023 COURT EVIDENCE CERTIFICATE */}
+          {activeTab === 'bsa-court' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-300 flex items-center space-x-2">
+                    <span>⚖️ Section 63 Bharat Sakshya Adhiniyam (BSA), 2023 Evidence Certificate</span>
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Statutory electronic record certificate for Judicial Magistrate trial &amp; asset forfeiture
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => {
+                      if (courtCertificate) {
+                        navigator.clipboard.writeText(JSON.stringify(courtCertificate, null, 2));
+                        setCopiedCert(true);
+                        setTimeout(() => setCopiedCert(false), 2000);
+                      }
+                    }}
+                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded text-xs font-bold transition flex items-center space-x-1 cursor-pointer"
+                  >
+                    <span>{copiedCert ? '✔ Copied JSON' : '📋 Copy Data'}</span>
+                  </button>
+                  <button
+                    onClick={() => window.print()}
+                    className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded text-xs font-bold transition flex items-center space-x-1 cursor-pointer"
+                  >
+                    <span>🖨️ Print / Export PDF</span>
+                  </button>
+                </div>
+              </div>
+
+              {certLoading ? (
+                <div className="p-12 text-center text-slate-400">
+                  <span className="animate-spin inline-block w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full mb-2"></span>
+                  <p>Synthesizing cryptographic Merkle roots and electronic signature hashes...</p>
+                </div>
+              ) : !courtCertificate ? (
+                <div className="bg-slate-900/60 border border-slate-800 p-8 rounded-xl text-center text-slate-400 text-xs">
+                  Click "Issue Section 94 BNSS Freezing Notice" in the Attribution tab first to generate the official court certificate.
+                </div>
+              ) : (
+                <div className="bg-[#040810] border-2 border-emerald-600/70 rounded-xl p-6 space-y-6 shadow-2xl text-slate-200">
+                  
+                  {/* Formal Header */}
+                  <div className="text-center border-b-2 border-emerald-700/60 pb-4 space-y-1">
+                    <div className="text-xs tracking-widest text-emerald-400 font-sans font-bold uppercase">
+                      GOVERNMENT OF INDIA &bull; MINISTRY OF HOME AFFAIRS
+                    </div>
+                    <h2 className="text-lg font-black tracking-wide text-white uppercase font-sans">
+                      CERTIFICATE UNDER SECTION 63 BHARAT SAKSHYA ADHINIYAM (BSA), 2023
+                    </h2>
+                    <p className="text-xs text-slate-400 font-sans">
+                      (Formerly Section 65B of Indian Evidence Act, 1872) r/w Section 94 Bharatiya Nagarik Suraksha Sanhita (BNSS), 2023
+                    </p>
+                    <div className="pt-2 text-xs font-mono text-cyan-300 font-sans">
+                      CERTIFICATE ID: <strong>{courtCertificate.certificate_id}</strong> &bull; DATE: {courtCertificate.notarized_timestamp_utc}
+                    </div>
+                  </div>
+
+                  {/* Police Station & FIR Binding */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-950/80 p-3.5 rounded border border-slate-800 font-sans text-xs">
+                    <div>
+                      <span className="text-slate-400 block text-[10px] uppercase">Police Station</span>
+                      <strong className="text-slate-200">{courtCertificate.police_station}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px] uppercase">FIR Reference</span>
+                      <strong className="text-cyan-300 font-mono">{courtCertificate.fir_reference}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px] uppercase">Court Jurisdiction</span>
+                      <strong className="text-slate-200">{courtCertificate.court_jurisdiction}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px] uppercase">Investigating Officer</span>
+                      <strong className="text-emerald-400">{courtCertificate.issuing_authority}</strong>
+                    </div>
+                  </div>
+
+                  {/* Target VASP & Frozen Ingress Table */}
+                  <div className="space-y-2 font-sans">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+                      Target VASP Ingress &amp; Frozen Asset Summary
+                    </span>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-950 p-3 rounded border border-slate-800 text-xs">
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase">Designated VASP</span>
+                        <strong className="text-white text-sm">{courtCertificate.nearest_vasp_name}</strong>
+                        <div className="text-[10px] text-cyan-400 font-mono mt-0.5">{courtCertificate.vasp_fiu_reg_id}</div>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase">Target VASP Deposit Address</span>
+                        <div className="font-mono text-cyan-300 text-[11px] truncate bg-slate-900 p-1.5 rounded mt-1 border border-slate-800">
+                          {courtCertificate.vasp_deposit_address}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase">Seized / Frozen Ingress Amount</span>
+                        <div className="text-lg font-black text-amber-400">
+                          ₹{courtCertificate.frozen_amount_inr.toLocaleString('en-IN')}
+                        </div>
+                        <div className="text-[10px] text-slate-400 font-mono">
+                          ({courtCertificate.frozen_amount_crypto.toLocaleString()} {courtCertificate.token_symbol})
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cryptographic Hashes & Chain of Custody */}
+                  <div className="space-y-2 font-mono text-xs">
+                    <span className="text-xs font-sans font-bold uppercase tracking-wider text-slate-400 block">
+                      Cryptographic Chain of Custody Proofs (Sec 63(4)(c) BSA 2023)
+                    </span>
+                    <div className="bg-slate-950 p-3 rounded border border-slate-800 space-y-1.5">
+                      <div>
+                        <span className="text-slate-400">Merkle Evidence Root: </span>
+                        <span className="text-emerald-400 font-bold">{courtCertificate.merkle_evidence_root}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400">System SHA-256 Digest: </span>
+                        <span className="text-cyan-300">{courtCertificate.system_hash_sha256}</span>
+                      </div>
+                      <div className="pt-2 border-t border-slate-800">
+                        <span className="text-slate-400 block mb-1">Hop Transaction Hashes ({courtCertificate.chain_of_custody_hashes.length}):</span>
+                        {courtCertificate.chain_of_custody_hashes.map((h, hIdx) => (
+                          <div key={hIdx} className="text-[10px] text-slate-400">
+                            Hop #{hIdx + 1} Hash: <span className="text-slate-200">{h}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Legal Declaration */}
+                  <div className="bg-slate-950/60 p-4 rounded border border-slate-800 text-xs italic text-slate-300 leading-relaxed">
+                    &ldquo;{courtCertificate.legal_declaration}&rdquo;
+                  </div>
+
+                  {/* Verification QR / Signature Block */}
+                  <div className="pt-4 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 font-sans text-xs">
+                    <div className="font-mono text-[10px] text-slate-500">
+                      QR Payload: <span className="text-slate-400">{courtCertificate.qr_verification_payload}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-slate-200 uppercase">{courtCertificate.issuing_authority}</div>
+                      <div className="text-slate-400 text-[10px]">Officer Badge: {courtCertificate.officer_badge}</div>
+                      <div className="text-emerald-400 text-[10px] font-semibold mt-0.5">Digitally Notarized &bull; MHA Sovereign Seal</div>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB: LIVE 1930 HELPLINE FEED */}
+          {activeTab === 'live-feed' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-rose-300 flex items-center space-x-2">
+                    <span>🚨 Live 1930 Cybercrime Helpline Ingestion Feed</span>
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Real-time national cybercrime victim complaints automatically parsed and attributed to nearest VASPs
+                  </p>
+                </div>
+                <button
+                  onClick={handleLoadLiveFeed}
+                  disabled={liveLoading}
+                  className="px-3 py-1.5 bg-rose-900/40 hover:bg-rose-900 text-rose-300 border border-rose-700/60 rounded text-xs font-bold transition flex items-center space-x-1 cursor-pointer"
+                >
+                  {liveLoading ? <span>Fetching...</span> : <span>🔄 Ingest Latest Stream</span>}
+                </button>
+              </div>
+
+              {liveLoading ? (
+                <div className="p-12 text-center text-slate-400">
+                  <span className="animate-spin inline-block w-6 h-6 border-2 border-rose-500 border-t-transparent rounded-full mb-2"></span>
+                  <p>Polling NCRP 1930 Cybercrime Router...</p>
+                </div>
+              ) : live1930Alerts.length === 0 ? (
+                <div className="bg-slate-900/60 border border-slate-800 p-8 rounded-xl text-center text-slate-400 text-xs">
+                  Click "Ingest Latest Stream" to poll live simulated complaints from 1930 Helpline.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {live1930Alerts.map((alert) => (
+                    <div
+                      key={alert.alert_id}
+                      className="bg-slate-900/90 border border-rose-900/40 hover:border-rose-600/70 rounded-xl p-4.5 space-y-3 shadow-lg transition"
+                    >
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                          <span className="font-mono font-bold text-rose-300 text-xs">{alert.alert_id}</span>
+                          <span className="text-slate-400 text-xs">({alert.victim_city})</span>
+                        </div>
+                        <span className="text-[10px] font-mono text-slate-400">{alert.incident_time}</span>
+                      </div>
+
+                      <div>
+                        <div className="font-bold text-slate-200 text-sm">{alert.crime_category}</div>
+                        <div className="flex items-baseline space-x-2 mt-1">
+                          <span className="text-base font-black text-rose-400">
+                            ₹{alert.victim_reported_loss_inr.toLocaleString('en-IN')}
+                          </span>
+                          <span className="text-[10px] text-slate-400">Reported Fraud Loss</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-950 p-2.5 rounded border border-slate-800 text-xs space-y-1 font-mono">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">Unhosted Wallet:</span>
+                          <span className="text-cyan-300 truncate max-w-[170px]">{alert.unhosted_suspect_wallet}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">Nearest VASP:</span>
+                          <span className="text-white font-bold">{alert.attributed_vasp} ({alert.hop_count} Hops)</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">Attribution Conf:</span>
+                          <span className="text-emerald-400 font-bold">{alert.confidence_score}%</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-[10px] text-amber-300 font-semibold truncate max-w-[200px]">
+                          {alert.statutory_action}
+                        </span>
+                        <button
+                          onClick={() => {
+                            setWalletInput(alert.unhosted_suspect_wallet);
+                            setNetwork(alert.detected_network as BlockchainNetwork);
+                            setActiveTab('attribution');
+                            handleRunAttribution(alert.unhosted_suspect_wallet, alert.detected_network as BlockchainNetwork);
+                          }}
+                          className="px-3 py-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs rounded transition flex items-center space-x-1 cursor-pointer"
+                        >
+                          <span>⚡ Trace &amp; Freeze</span>
+                        </button>
+                      </div>
+
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
