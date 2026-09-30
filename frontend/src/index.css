@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #0B0F19;
+    --surface-1: #111827;
+    --surface-2: #1E293B;
+    --border-line: #334155;
+    --text-primary: #F8FAFC;
+    --text-muted: #94A3B8;
+    --accent-cyan: #38BDF8;
+    --accent-amber: #F59E0B;
+    --accent-crimson: #EF4444;
+    --accent-emerald: #10B981;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  #root {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+/* Custom Tactical Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0B0F19;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Canvas viewport */
+.cytoscape-canvas {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, #131B2E 0%, #0B0F19 100%);
+}

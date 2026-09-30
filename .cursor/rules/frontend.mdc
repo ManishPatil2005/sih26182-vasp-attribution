@@ -1,0 +1,16 @@
+---
+description: Frontend UI rules for React, TypeScript, Tailwind CSS, and Cytoscape.js
+globs: frontend/**
+alwaysApply: false
+---
+
+# Frontend Engineering Rules
+
+1. Use TypeScript with `strict: true`. Never use `any`; use strongly-typed graph and entity interfaces.
+2. Adhere to the Tactical Dark Intelligence theme defined in `docs/DESIGN.md`:
+   - Dark background: `#0B0F19`
+   - Panels: `#111827`, Cards: `#1E293B`, Borders: `#334155`
+   - Masterminds: Crimson `#EF4444`, Brokers: Amber `#F59E0B`, Phones: Emerald `#10B981`
+3. Cytoscape.js graph canvas must be responsive, maintain 60 FPS, and handle zoom/pan cleanly.
+4. Centralize all API client calls in `src/services/api.ts`.
+5. Support empty states, loading indicators, and error boundaries for all forensic views.

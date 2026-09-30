@@ -1,0 +1,14 @@
+---
+description: General engineering and code quality rules for CRIMEGRAPH AI
+globs: *
+alwaysApply: true
+---
+
+# CRIMEGRAPH AI - General Rules
+
+1. Always follow the vertical slice development workflow:
+   - Understand -> Plan -> Implement -> Test -> Review -> Commit -> Update Docs.
+2. Read `docs/PRD.md`, `docs/ARCHITECTURE.md`, and `docs/RULES.md` before making architectural changes.
+3. Every graph entity or edge must include an evidence provenance link (document ID, offset, or transaction reference).
+4. Never leave unused imports, dead code, or temporary console logs.
+5. All commits must follow conventional commits: `feat:`, `fix:`, `sec:`, `test:`, `docs:`.

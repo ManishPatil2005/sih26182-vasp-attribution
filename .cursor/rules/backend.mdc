@@ -1,0 +1,14 @@
+---
+description: Python backend rules for FastAPI, NetworkX, Splink, and cryptography
+globs: backend/**
+alwaysApply: false
+---
+
+# Backend Engineering Rules
+
+1. Use Python 3.10+ with strict type hints on every function signature and return value.
+2. All data transfer models must use Pydantic v2 schemas (`BaseModel`, `Field`, `ConfigDict`).
+3. Business logic belongs in `backend/app/engines/` and `backend/app/storage/`. Never put heavy computational algorithms or graph queries directly into API route handlers.
+4. The `GraphEngine` must support in-memory `NetworkX` mode out of the box so that evaluations can run without requiring an external Neo4j instance.
+5. All cryptographic hash calculations for the audit ledger must use standard SHA-256 with UTF-8 encoding.
+6. Write unit tests in `backend/tests/` for all new engines and parser functions.

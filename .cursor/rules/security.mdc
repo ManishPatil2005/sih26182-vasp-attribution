@@ -1,0 +1,13 @@
+---
+description: Security and BSA 2023 compliance rules for CRIMEGRAPH AI
+globs: **
+alwaysApply: true
+---
+
+# Security & Compliance Rules
+
+1. Zero hardcoded secrets: Never hardcode passwords, API keys, or JWT tokens.
+2. The audit ledger is strictly append-only. Any attempt to mutate previous blocks must be treated as a security violation.
+3. Every digital evidence export must include a Section 63 BSA 2023 compliance signature with SHA-256 integrity hash.
+4. Mask PII in default views: Mask middle digits of phone numbers (`9876XXXX10`) and bank accounts (`XXXX-XXXX-9910`).
+5. All file uploads must validate MIME types and file extensions. Max size: 50MB.
