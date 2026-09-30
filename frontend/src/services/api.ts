@@ -6,7 +6,8 @@ import type {
   AuditBlock,
   AudioIntercept,
   IntelligenceDossier,
-  LiveStreamEvent
+  LiveStreamEvent,
+  BlockchainNetwork
 } from '../types/graph';
 
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
@@ -54,6 +55,15 @@ export async function fetchCryptoGraph(): Promise<GraphData> {
     headers: getAuthHeaders()
   });
   if (!res.ok) throw new Error('Failed to fetch VASP crypto graph');
+  return res.json();
+}
+
+export async function fetchWalletSubgraph(wallet: string, network?: BlockchainNetwork): Promise<GraphData> {
+  const params = network ? `?network=${network}` : '';
+  const res = await fetch(`${API_BASE}/vasp/graph/wallet/${encodeURIComponent(wallet)}${params}`, {
+    headers: getAuthHeaders()
+  });
+  if (!res.ok) throw new Error(`Failed to fetch subgraph for wallet ${wallet}`);
   return res.json();
 }
 

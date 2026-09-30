@@ -171,3 +171,36 @@ def test_crypto_graph_endpoint():
     assert "CRYPTO_WALLET" in node_types
     assert "VASP_EXCHANGE" in node_types
     assert "MULE_WALLET" in node_types
+
+
+def test_attribute_arbitrary_unhosted_wallet():
+    """Verify that any unknown unhosted wallet dynamically attributes to nearest VASP."""
+    arbitrary_wallet = "T9zXv4Kq18aLmN2pQ8wR7yZ6543210abcd"
+    res = client.post("/api/v1/vasp/attribute", json={
+        "wallet_address": arbitrary_wallet,
+        "officer_id": "INSP_I4C_DELHI"
+    })
+    assert res.status_code == 200
+    data = res.json()
+    assert data["query_wallet"] == arbitrary_wallet
+    assert data["blockchain"] == "TRON"
+    assert "nearest_vasp" in data
+    assert data["hop_distance"] >= 1
+    assert data["attribution_confidence_percent"] >= 90.0
+    assert len(data["path_steps"]) >= 2
+    assert "Section 94" in data["sahyog_notice_draft"]["notice_statute"]
+
+
+def test_wallet_subgraph_endpoint():
+    """Verify dedicated wallet subgraph endpoint returns focused trace elements."""
+    wallet = "0x892aF014b2a884E9102837482910482019482019"
+    res = client.get(f"/api/v1/vasp/graph/wallet/{wallet}")
+    assert res.status_code == 200
+    data = res.json()
+    assert "nodes" in data
+    assert "edges" in data
+    assert len(data["nodes"]) >= 2
+    assert data["nodes"][0]["id"] == wallet
+    assert data["nodes"][0]["type"] == "CRYPTO_WALLET"
+    assert any(n["type"] == "VASP_EXCHANGE" for n in data["nodes"])
+

@@ -74,3 +74,15 @@ async def get_vasp_attribution_graph():
     for interactive visual analysis in the Cytoscape workstation canvas.
     """
     return vasp_engine.get_crypto_graph()
+
+
+@router.get("/graph/wallet/{wallet_address}")
+async def get_wallet_subgraph(wallet_address: str, network: Optional[BlockchainNetwork] = None):
+    """
+    Dynamically generates the forensic transaction graph (nodes & edges)
+    for a specific unhosted suspect wallet, tracing its path to the nearest VASP.
+    """
+    if not wallet_address or not wallet_address.strip():
+        raise HTTPException(status_code=400, detail="Wallet address cannot be empty")
+    return vasp_engine.get_crypto_graph_for_wallet(wallet_address.strip(), network)
+

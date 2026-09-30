@@ -259,6 +259,30 @@ export const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({
                   BTC
                 </span>
               </button>
+
+              <button
+                onClick={() => {
+                  const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+                  const dynamicWallet = `TKa891x24NqZ91vM88aL9KzP4rT${randomSuffix}`;
+                  setWalletInput(dynamicWallet);
+                  setNetwork('TRON');
+                  handleExecuteTrace(dynamicWallet, 'TRON');
+                }}
+                className="w-full p-2 bg-gradient-to-r from-purple-950/60 to-slate-950 hover:bg-purple-900/30 border border-purple-800/60 hover:border-purple-500 rounded-lg text-left transition flex items-center justify-between cursor-pointer"
+              >
+                <div>
+                  <div className="font-bold text-purple-300 flex items-center space-x-1">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+                    <span>⚡ Live 1930 Ingestion (New Unhosted)</span>
+                  </div>
+                  <div className="font-mono text-[10px] text-slate-400 truncate max-w-[220px]">
+                    Dynamic Peeling Chain &amp; Graph Synthesis
+                  </div>
+                </div>
+                <span className="px-1.5 py-0.5 text-[9px] bg-purple-950 text-purple-300 border border-purple-700 rounded font-mono">
+                  LIVE 1930
+                </span>
+              </button>
             </div>
 
             {/* Recent Attribution Card */}

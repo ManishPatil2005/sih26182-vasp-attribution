@@ -109,19 +109,26 @@ export const App: React.FC = () => {
     setVaspTargetWallet(wallet);
     setVaspTargetNetwork(net);
 
-    // If node exists in graph, highlight it
-    const foundNode = graphData.nodes.find(n => n.id === wallet || n.label.includes(wallet));
-    if (foundNode) {
-      setSelectedNode(foundNode);
-    } else {
-      // Find nearest matching node
-      setSelectedNode({
-        id: wallet,
-        type: 'CRYPTO_WALLET',
-        label: `Unhosted Suspect Wallet (${net})`,
-        properties: { network: net, balance: 'Querying...', status: 'UNDER_ANALYSIS' },
-        risk_score: 0.95
-      });
+    try {
+      // Reload graph to immediately incorporate newly attributed nodes and edges
+      const updatedGraph = await fetchCryptoGraph();
+      setGraphData(updatedGraph);
+
+      const foundNode = updatedGraph.nodes.find(n => n.id === wallet || n.label.includes(wallet));
+      if (foundNode) {
+        setSelectedNode(foundNode);
+      } else {
+        setSelectedNode({
+          id: wallet,
+          type: 'CRYPTO_WALLET',
+          label: `Unhosted Suspect Wallet (${net})`,
+          properties: { network: net, balance: 'Live Tracing...', status: 'UNDER_ANALYSIS' },
+          risk_score: 0.95
+        });
+      }
+    } catch {
+      const foundNode = graphData.nodes.find(n => n.id === wallet || n.label.includes(wallet));
+      if (foundNode) setSelectedNode(foundNode);
     }
   };
 
