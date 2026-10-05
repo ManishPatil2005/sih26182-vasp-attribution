@@ -161,6 +161,24 @@ export const App: React.FC = () => {
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
       
+      {/* Persistent DEMO Environment Banner (Mandatory SIH26182 Public Safety Notice) */}
+      <div className="w-full bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 border-b border-amber-500/40 px-4 py-1.5 flex items-center justify-between text-xs font-mono text-amber-300 z-40 shrink-0">
+        <div className="flex items-center space-x-2.5">
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-amber-500 text-slate-950 uppercase tracking-wider">
+            DEMO ENVIRONMENT
+          </span>
+          <span className="text-amber-400/60">•</span>
+          <span className="text-slate-200 font-semibold">Synthetic / Public Blockchain Data</span>
+          <span className="text-amber-400/60">•</span>
+          <span className="text-amber-400 font-bold">No Real Law-Enforcement Action</span>
+        </div>
+        <div className="hidden sm:flex items-center space-x-3 text-[11px] text-amber-300/80">
+          <span>Active Role: <strong className="text-cyan-300">{currentSession.role}</strong></span>
+          <span className="text-amber-400/60">•</span>
+          <span>Badge: <span className="font-mono text-slate-300">{currentSession.badge_number}</span></span>
+        </div>
+      </div>
+
       {/* Top Bar with SIH26182 Controls */}
       <TopNav
         onOpenVASPAttribution={() => setShowVASPModal(true)}

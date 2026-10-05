@@ -13,7 +13,7 @@
 
 ---
 
-[![Tests Passing](https://img.shields.io/badge/Pytest-78%2F78%20Passing%20(100%25)-brightgreen.svg)](backend/tests/)
+[![Tests Passing](https://img.shields.io/badge/Pytest-82%2F82%20Passing%20(100%25)-brightgreen.svg)](backend/tests/)
 [![Security SAST](https://img.shields.io/badge/Security-Bandit%20SAST%200%20Vulnerabilities-emerald.svg)](backend/app/)
 [![Statutory Compliance](https://img.shields.io/badge/Statute-Section%2094%20BNSS%202023%20%7C%20Sec%2063%20BSA-blue.svg)](backend/app/engines/vasp_attribution_engine.py)
 [![FIU-IND Registry](https://img.shields.io/badge/FIU--IND-Compliant%20VASP%20Clustering-cyan.svg)](backend/app/engines/vasp_attribution_engine.py)
@@ -101,7 +101,7 @@ The rapid adoption of Virtual Digital Assets (VDAs) in India has created severe 
 | **Attribution Accuracy** | ~60% (Fragmented) | **96.8% Verified Accuracy** | **+36.8% Gain** |
 | **Statutory Notice Issuance** | Manual Typing / Signatures | **1-Click Section 94 BNSS Draft** | **Instant MHA Gateway Ready** |
 | **Court Admissibility** | Challenged in Trials | **Sec 63 BSA Merkle Certificate** | **Mathematically Unimpeachable** |
-| **Total Test Coverage** | N/A | **66 / 66 Tests Passing (100%)** | **Zero Regressions** |
+| **Total Test Coverage** | N/A | **82 / 82 Tests Passing (100%)** | **Zero Regressions** |
 | **Security SAST Audit** | N/A | **0 Medium/High Vulnerabilities** | **Zero-Trust Hardened** |
 
 ---
@@ -151,7 +151,7 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 
-# Run full test suite (66 tests)
+# Run full test suite (82 tests)
 pytest tests/ -v
 
 # Run DevSecOps SAST security scan
@@ -167,13 +167,28 @@ Swagger API docs available at: `http://127.0.0.1:8000/docs`
 cd frontend
 npm install
 
-# Build for production
+# Build for production (TypeScript + Vite)
 npm run build
 
 # Launch dev server
 npm run dev
 ```
 Workstation UI available at: `http://localhost:5173`
+
+---
+
+## 🔒 5.1 Safe Evaluation & Demonstration Access (SIH Sandbox)
+
+To enable frictionless evaluation during the Smart India Hackathon jury review without sacrificing backend zero-trust security:
+
+1. **One-Click Demo Ingress:**  
+   Click **"Enter Investigator Demo"** on the login screen. This issues a restricted, short-lived (`30-minute`) session under the `DEMO_INVESTIGATOR` role.
+   - **Zero Friction:** No email, password, OTP, or authenticator app needed.
+   - **Restricted Sandbox Scope:** Granted access to wallet analysis, multi-chain tracing, nearest-VASP attribution, graph visualization, Section 94 BNSS notice drafting, Section 63 BSA certificate generation, and simulated SAHYOG routing.
+   - **Hardened Denials:** Denied access to administrator consoles (`/admin/users`, `/admin/audit-logs`), credential provisioning, user killswitches, and production keys.
+2. **Production Authentication:**  
+   Click **"Switch to Credentials Mode"** to test official law-enforcement logins with NIST PBKDF2-HMAC-SHA256 password verification and live RFC 6238 TOTP 2FA.
+   - *Note:* The 1-click demo ingress is strictly designed for safe sandbox evaluation and is **not** suitable for live production police deployments, which require hardware tokens, Jan Parichay SSO, and NIC mTLS certificates.
 
 ---
 

@@ -5,10 +5,11 @@ export interface OfficerSession {
   rank: string;
   agency_code: string;
   clearance_level: string;
-  role: 'SUPER_ADMIN' | 'AGENCY_SUPERVISOR' | 'INVESTIGATING_OFFICER' | 'ANALYST';
+  role: 'SUPER_ADMIN' | 'AGENCY_SUPERVISOR' | 'INVESTIGATING_OFFICER' | 'ANALYST' | 'DEMO_INVESTIGATOR';
   token: string;
   expires_at: number;
   created_at: string;
+  is_demo?: boolean;
 }
 
 export interface DemoPersona {

@@ -25,6 +25,19 @@ export async function loginOfficer(
   return data;
 }
 
+export async function loginDemoInvestigator(): Promise<{ status: string; message: string; session: OfficerSession }> {
+  const res = await fetch(`${API_BASE}/auth/demo-login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.detail || 'Demo login failed.');
+  }
+  return data;
+}
+
 export async function verifyMfa(
   badge_number: string, 
   password: string, 

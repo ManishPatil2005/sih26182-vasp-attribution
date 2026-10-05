@@ -62,6 +62,11 @@ def get_current_officer(authorization: Optional[str] = Header(None)) -> Dict[str
 
 def require_super_admin(officer: Dict[str, Any] = Depends(get_current_officer)) -> Dict[str, Any]:
     """Enforces Super Admin privilege under Section 69 IT Act."""
+    if officer.get("role") == "DEMO_INVESTIGATOR" or officer.get("is_demo"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. DEMO_INVESTIGATOR role cannot execute administrative operations."
+        )
     if officer.get("role") != "SUPER_ADMIN":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -72,12 +77,43 @@ def require_super_admin(officer: Dict[str, Any] = Depends(get_current_officer)) 
 
 def require_supervisor_or_admin(officer: Dict[str, Any] = Depends(get_current_officer)) -> Dict[str, Any]:
     """Enforces Supervisory or Super Admin privilege."""
+    if officer.get("role") == "DEMO_INVESTIGATOR" or officer.get("is_demo"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. DEMO_INVESTIGATOR role cannot access administrative directories or audit logs."
+        )
     if officer.get("role") not in ("SUPER_ADMIN", "AGENCY_SUPERVISOR"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied. Requires supervisory or administrative clearance."
         )
     return officer
+
+
+def require_production_officer(officer: Dict[str, Any] = Depends(get_current_officer)) -> Dict[str, Any]:
+    """Enforces that caller is an official production law enforcement officer, denying demo roles."""
+    if officer.get("role") == "DEMO_INVESTIGATOR" or officer.get("is_demo"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Demo investigator role cannot execute production law enforcement functions."
+        )
+    return officer
+
+
+@router.post("/demo-login", summary="One-Click Demo Investigator Ingress")
+async def demo_login(request: Request):
+    """
+    Provisions a restricted, short-lived DEMO_INVESTIGATOR session for public SIH competition
+    and jury review. Eliminates email/password/OTP/2FA friction while strictly enforcing
+    restricted permissions and forbidding administrative access.
+    """
+    ip_addr = get_client_ip(request)
+    session = auth_engine.create_demo_session(ip_address=ip_addr)
+    return {
+        "status": "AUTHENTICATED",
+        "message": "Demo investigator session established. Public evaluation sandbox active.",
+        "session": session.model_dump()
+    }
 
 
 @router.post("/login", summary="Officer Login (Credentials & 2FA)")

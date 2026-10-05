@@ -69,7 +69,8 @@ class AuthEngine:
     PBKDF2_ITERATIONS = 100_000
     MAX_FAILED_ATTEMPTS = 5
     LOCKOUT_DURATION_SECONDS = 900  # 15 minutes
-    TOKEN_VALIDITY_SECONDS = 28800  # 8 hours
+    TOKEN_VALIDITY_SECONDS = 28800  # 8 hours for production officers
+    DEMO_TOKEN_VALIDITY_SECONDS = 1800  # 30 minutes short-lived session for public demo evaluation
 
     def __init__(self):
         self.users: Dict[str, OfficerUser] = {}
@@ -275,6 +276,18 @@ class AuthEngine:
                 "totp_secret": "OBSWY3DPEHPK3PXS",
                 "is_active": False  # Suspended to demonstrate zero-trust defense
             },
+            {
+                "user_id": "usr-demo-investigator",
+                "badge_number": "DEMO-INVESTIGATOR",
+                "full_name": "Demo Forensic Investigator",
+                "rank": "Guest Evaluator (SIH Sandbox)",
+                "agency_code": "SIH_DEMO_SANDBOX",
+                "clearance_level": "RESTRICTED_DEMO_SANDBOX",
+                "role": "DEMO_INVESTIGATOR",
+                "password": secrets.token_hex(32),
+                "totp_secret": "JBSWY3DPEHPK3PXP",
+                "is_active": True
+            },
             # Backward-compatibility legacy aliases for test suites
             {
                 "user_id": "usr-legacy-mha-001",
@@ -465,6 +478,94 @@ class AuthEngine:
         
         self.record_audit("LOGIN_SUCCESS", user.badge_number, ip_address, "SUCCESS", f"2FA Verified. Sovereign JWT issued for agency: {user.agency_code}")
         return True, session, "Authentication successful."
+
+    def create_demo_session(self, ip_address: str = "127.0.0.1") -> AuthSession:
+        """
+        Creates a restricted, short-lived demo investigator session for public SIH competition
+        and evaluation without requiring passwords or 2FA friction.
+        """
+        now = time.time()
+        exp = now + self.DEMO_TOKEN_VALIDITY_SECONDS
+        
+        demo_user = self.get_user_by_badge("DEMO-INVESTIGATOR")
+        if not demo_user:
+            demo_user = OfficerUser(
+                user_id="usr-demo-investigator",
+                badge_number="DEMO-INVESTIGATOR",
+                full_name="Demo Forensic Investigator",
+                rank="Guest Evaluator (SIH Sandbox)",
+                agency_code="SIH_DEMO_SANDBOX",
+                clearance_level="RESTRICTED_DEMO_SANDBOX",
+                role="DEMO_INVESTIGATOR",
+                is_active=True,
+                is_mfa_enabled=False,
+                totp_secret="",
+                salt="",
+                password_hash=""
+            )
+            self.users[demo_user.badge_number] = demo_user
+
+        header = {"alg": "HS256", "typ": "JWT"}
+        payload = {
+            "sub": demo_user.badge_number,
+            "uid": demo_user.user_id,
+            "name": demo_user.full_name,
+            "rank": demo_user.rank,
+            "agency": demo_user.agency_code,
+            "clearance": demo_user.clearance_level,
+            "role": "DEMO_INVESTIGATOR",
+            "is_demo": True,
+            "scope": [
+                "dashboard:read",
+                "wallet:analyze",
+                "trace:read",
+                "vasp:attribute",
+                "graph:read",
+                "report:generate",
+                "sahyog:simulate"
+            ],
+            "iat": int(now),
+            "exp": int(exp),
+            "iss": "SAHYOG-VASP-DEMO-AUTH",
+            "jti": secrets.token_hex(12)
+        }
+
+        encoded_header = base64.urlsafe_b64encode(json.dumps(header).encode()).decode().rstrip("=")
+        encoded_payload = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip("=")
+        message = f"{encoded_header}.{encoded_payload}".encode()
+        
+        signature = hmac.new(settings.SECRET_KEY.encode(), message, hashlib.sha256).digest()
+        encoded_sig = base64.urlsafe_b64encode(signature).decode().rstrip("=")
+        token = f"{encoded_header}.{encoded_payload}.{encoded_sig}"
+
+        now_ts = datetime.now(timezone.utc).isoformat()
+        session_id = f"demo-sess-{secrets.token_hex(8)}"
+        
+        session = AuthSession(
+            session_id=session_id,
+            badge_number=demo_user.badge_number,
+            full_name=demo_user.full_name,
+            rank=demo_user.rank,
+            agency_code=demo_user.agency_code,
+            clearance_level=demo_user.clearance_level,
+            role="DEMO_INVESTIGATOR",
+            token=token,
+            expires_at=exp,
+            created_at=now_ts
+        )
+
+        demo_user.last_login_at = now_ts
+        demo_user.last_login_ip = ip_address
+        self.active_sessions[token] = session
+        
+        self.record_audit(
+            "LOGIN_DEMO_INVESTIGATOR",
+            demo_user.badge_number,
+            ip_address,
+            "SUCCESS",
+            "Public demonstration session established with restricted DEMO_INVESTIGATOR scope."
+        )
+        return session
 
     def logout(self, token: str, ip_address: str = "127.0.0.1") -> bool:
         """Revokes an active session."""

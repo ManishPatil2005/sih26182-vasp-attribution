@@ -277,3 +277,102 @@ def test_sih26182_i4c_fiu_personas_login():
     assert "SUSPENDED" in bad_resp.json()["detail"]
 
 
+def test_one_click_demo_login():
+    """Verify frictionless one-click demo login creates a short-lived DEMO_INVESTIGATOR session."""
+    resp = client.post("/api/v1/auth/demo-login")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "AUTHENTICATED"
+    assert "Demo investigator session established" in data["message"]
+    
+    session = data["session"]
+    assert session["badge_number"] == "DEMO-INVESTIGATOR"
+    assert session["role"] == "DEMO_INVESTIGATOR"
+    assert session["agency_code"] == "SIH_DEMO_SANDBOX"
+    # Ensure short-lived session (<= 1800s / 30 mins from now)
+    import time
+    assert 0 < (session["expires_at"] - time.time()) <= 1805
+
+
+def test_demo_investigator_permissions_and_admin_denial():
+    """Verify DEMO_INVESTIGATOR has access to core VASP attribution but is denied admin routes."""
+    # Obtain demo session token
+    demo_resp = client.post("/api/v1/auth/demo-login")
+    token = demo_resp.json()["session"]["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. ALLOWED: Current session identity (/me)
+    me_resp = client.get("/api/v1/auth/me", headers=headers)
+    assert me_resp.status_code == 200
+    assert me_resp.json()["role"] == "DEMO_INVESTIGATOR"
+
+    # 2. ALLOWED: Core VASP Attribution endpoints
+    vasp_resp = client.post(
+        "/api/v1/vasp/attribute",
+        json={"wallet_address": "TTsY1v6BpxvU9jP1k2L4wE8rT992p", "network": "TRON"},
+        headers=headers
+    )
+    assert vasp_resp.status_code == 200
+    assert vasp_resp.json()["nearest_vasp"]["name"] == "Binance Exchange & P2P"
+
+    # 3. ALLOWED: Subgraph & Graph Visualization endpoints
+    graph_resp = client.get("/api/v1/vasp/graph", headers=headers)
+    assert graph_resp.status_code == 200
+    assert len(graph_resp.json()["nodes"]) > 0
+
+    # 4. ALLOWED: Typology Deep Scan & Mixer Taint
+    typo_resp = client.get("/api/v1/vasp/typology/TTsY1v6BpxvU9jP1k2L4wE8rT992p?network=TRON", headers=headers)
+    assert typo_resp.status_code == 200
+
+    # 5. DENIED (403 Forbidden): Admin User Management
+    admin_users_resp = client.get("/api/v1/auth/admin/users", headers=headers)
+    assert admin_users_resp.status_code == 403
+    assert "Access denied" in admin_users_resp.json()["detail"]
+
+    # 6. DENIED (403 Forbidden): Admin Audit Logs
+    admin_audit_resp = client.get("/api/v1/auth/admin/audit-logs", headers=headers)
+    assert admin_audit_resp.status_code == 403
+    assert "Access denied" in admin_audit_resp.json()["detail"]
+
+    # 7. DENIED (403 Forbidden): User Status Killswitch
+    toggle_resp = client.post("/api/v1/auth/admin/users/I4C-CRYPTO-782/status", json={"is_active": False}, headers=headers)
+    assert toggle_resp.status_code == 403
+
+
+def test_demo_session_logout_and_revocation():
+    """Verify logging out revokes the demo session token."""
+    demo_resp = client.post("/api/v1/auth/demo-login")
+    token = demo_resp.json()["session"]["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Verify active
+    assert client.get("/api/v1/auth/me", headers=headers).status_code == 200
+
+    # Terminate session
+    logout_resp = client.post("/api/v1/auth/logout", headers=headers)
+    assert logout_resp.status_code == 200
+    assert logout_resp.json()["status"] == "REVOKED"
+
+    # Subsequent access with revoked token is denied (401)
+    subsequent_resp = client.get("/api/v1/auth/me", headers=headers)
+    assert subsequent_resp.status_code == 401
+
+
+def test_tampered_and_unauthorized_token_access():
+    """Verify modified, unauthorized, and malformed tokens fail zero-trust checks."""
+    # 1. No token
+    assert client.get("/api/v1/auth/me").status_code == 401
+
+    # 2. Malformed token
+    assert client.get("/api/v1/auth/me", headers={"Authorization": "Bearer malformed.jwt.token"}).status_code == 401
+
+    # 3. Tampered payload
+    demo_resp = client.post("/api/v1/auth/demo-login")
+    valid_token = demo_resp.json()["session"]["token"]
+    parts = valid_token.split(".")
+    # Tamper payload
+    tampered_token = f"{parts[0]}.eyJzdWIiOiAiSEFDS0VEIn0.{parts[2]}"
+    assert client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {tampered_token}"}).status_code == 401
+
+
+

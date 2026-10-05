@@ -163,4 +163,36 @@ Every legacy artifact and CDR/telecom keyword was thoroughly eradicated, and the
   - Production frontend build: `npm run build` (`tsc -b && vite build`) passed with 0 errors.
 
 ---
+
+## 📅 Chronological Progress Update — October 5, 2026: Safe Competition / Demo Authentication UX & Role-Based Access Control
+
+### 1. Frictionless 1-Click "Enter Investigator Demo" Ingress
+- **UX Transformation (`AuthGate.tsx`):**
+  - Replaced demo login form with a primary, 1-click **"Enter Investigator Demo"** ingress card.
+  - Completely eliminated email/password/OTP/2FA friction for public SIH competition and jury evaluation.
+  - Added clear disclosure of sandbox scope, granted permissions, and security restrictions.
+  - Included a toggle to switch to official production credentials mode (PBKDF2 + live RFC 6238 TOTP 2FA) for evaluators who wish to test production PKI gates.
+
+### 2. Dedicated `DEMO_INVESTIGATOR` Role & Zero-Trust Server Enforcement
+- **Backend Role & Session Engine (`auth_engine.py`, `auth.py`):**
+  - Created restricted `DEMO_INVESTIGATOR` role with short-lived session validity (30 minutes).
+  - Granted permissions: dashboard access, wallet analysis, blockchain tracing, nearest VASP attribution, graph visualization, Section 94 BNSS notice drafting, Section 63 BSA certificate generation, and simulated SAHYOG routing.
+  - Server-side access denial: explicitly blocks administrative routes (`/admin/users`, `/admin/audit-logs`, `/admin/users/{badge}/status`), credential management, user killswitches, and production keys with `HTTP 403 Forbidden`.
+  - Zero hard-coded credentials: demo login is performed via dedicated `POST /api/v1/auth/demo-login` issuing an ephemeral HS256 JWT without hard-coded passwords or secrets in frontend code.
+
+### 3. Persistent Safety Banner (`App.tsx`)
+- Added persistent top banner across the entire application:
+  `DEMO ENVIRONMENT • Synthetic / Public Blockchain Data • No Real Law-Enforcement Action`
+  ensuring judges, evaluators, and investigators are always informed of sandbox mode and active role.
+
+### 4. Automated Testing & Verification
+- Expanded automated test suite from 78 to **82 passing tests (100%)**:
+  - `test_one_click_demo_login` (verified short-lived session)
+  - `test_demo_investigator_permissions_and_admin_denial` (verified granted vs denied routes)
+  - `test_demo_session_logout_and_revocation` (verified session revocation on logout)
+  - `test_tampered_and_unauthorized_token_access` (verified zero-trust tamper detection)
+- Frontend production build verified: `tsc -b && vite build` passed cleanly in **200 ms**.
+- Static security analysis: Bandit SAST verified with **0 High / 0 Medium vulnerabilities**.
+
+---
 *Log maintained and certified for Ministry of Home Affairs (MHA) / Indian Cyber Crime Coordination Centre (I4C) evaluation under SIH26182.*
