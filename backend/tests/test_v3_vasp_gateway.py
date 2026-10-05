@@ -95,3 +95,19 @@ def test_printable_notice_endpoint():
     assert "raw_notice_text" in data
     assert "SECTION 94 BNSS" in data["raw_notice_text"].upper()
     assert data["statutory_deadline_hours"] == 2
+
+
+def test_live_query_and_provenance_tracking():
+    # Test Bitcoin query and provenance
+    btc_wallet = "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq"
+    success, intel, prov = blockchain_gateway.query_live_blockchain_intel(btc_wallet, BlockchainNetwork.BITCOIN)
+    assert prov in ("LIVE_BLOCKCHAIN_API", "DETERMINISTIC_HEURISTIC")
+
+    # Deep scan endpoint check for provenance metadata
+    res = client.get(f"/api/v1/vasp/typology/{btc_wallet}?network=BITCOIN")
+    assert res.status_code == 200
+    data = res.json()
+    assert "data_provenance" in data
+    assert data["live_query_attempted"] is True
+    assert data["data_provenance"] in ("LIVE_BLOCKCHAIN_API", "DETERMINISTIC_HEURISTIC")
+

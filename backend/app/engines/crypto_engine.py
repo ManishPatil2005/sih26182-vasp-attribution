@@ -29,8 +29,8 @@ class CryptoForensicsEngine:
         self._initialize_sovereign_crypto_datasets()
 
     def _initialize_sovereign_crypto_datasets(self) -> None:
-        """Seeds known priority darknet escrow flows and fiat off-ramps for Operation Rakshak & Chakra."""
-        # 1. Flow 1: Operation Rakshak - Darknet Cyber Extortion & Ransom Peeling Chain (USDT TRC-20)
+        """Seeds known benchmark darknet escrow flows and fiat off-ramps for SIH26182 multi-hop tracing validation."""
+        # 1. Flow 1: Benchmark Cyber Extortion & Ransom Peeling Chain (USDT TRC-20)
         rakshak_hops = [
             CryptoHop(
                 tx_hash="0x3f9a72b0c11488deca91823901429810ef89a112001928340192834019283401",
@@ -87,7 +87,7 @@ class CryptoForensicsEngine:
             destination_mule_account="ACC_HDFC_991823 (Vikram Rathore)"
         )
 
-        # 2. Flow 2: Operation Chakra-Net - Narcotics Hawala Bitcoin Tumbler (BTC)
+        # 2. Flow 2: Benchmark Hawala Bitcoin Tumbler (BTC)
         chakra_hops = [
             CryptoHop(
                 tx_hash="7f9a88bcde102948192834019283401928340192834019283401928340192834",
