@@ -13,7 +13,7 @@
 
 ---
 
-[![Tests Passing](https://img.shields.io/badge/Pytest-77%2F77%20Passing%20(100%25)-brightgreen.svg)](backend/tests/)
+[![Tests Passing](https://img.shields.io/badge/Pytest-78%2F78%20Passing%20(100%25)-brightgreen.svg)](backend/tests/)
 [![Security SAST](https://img.shields.io/badge/Security-Bandit%20SAST%200%20Vulnerabilities-emerald.svg)](backend/app/)
 [![Statutory Compliance](https://img.shields.io/badge/Statute-Section%2094%20BNSS%202023%20%7C%20Sec%2063%20BSA-blue.svg)](backend/app/engines/vasp_attribution_engine.py)
 [![FIU-IND Registry](https://img.shields.io/badge/FIU--IND-Compliant%20VASP%20Clustering-cyan.svg)](backend/app/engines/vasp_attribution_engine.py)
