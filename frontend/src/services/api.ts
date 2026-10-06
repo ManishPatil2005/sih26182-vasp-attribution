@@ -10,7 +10,17 @@ import type {
   BlockchainNetwork
 } from '../types/graph';
 
-export const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+function getNormalizedApiBase(): string {
+  const envUrl = (import.meta.env.VITE_API_BASE_URL || '').trim();
+  if (!envUrl) return '/api/v1';
+  const clean = envUrl.replace(/\/+$/, '');
+  if (!clean.endsWith('/api/v1')) {
+    return `${clean}/api/v1`;
+  }
+  return clean;
+}
+
+export const API_BASE = getNormalizedApiBase();
 
 export function getActiveSession(): any {
   try {
